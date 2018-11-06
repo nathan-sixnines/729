@@ -215,6 +215,11 @@ function hexagon(x, y, ctx, value){
     
     console.log(ctx.fillStyle)
     ctx.fill()
+    
+    if(mod(value,2) == 0 && value != 0){
+        ctx.fillStyle = "#000000"
+    }
+    
     for(var h = 0; h < 6; h++){
         ctx.beginPath()
         ctx.arc(arcRets[h][0], arcRets[h][1], radius, 0,6.3)
@@ -222,6 +227,7 @@ function hexagon(x, y, ctx, value){
         ctx.fill()
         //ctx.stroke()
     }
+    
     
     if(fill){
         ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
