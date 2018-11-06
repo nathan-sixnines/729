@@ -430,7 +430,7 @@ function slideCol(col, up){
                     slide = true
                 }
                 else if(val == compVal){
-                    if((val / 6)%1 == 0){
+                    if(mod(val,2) == 0){
                         break       // break for two 6 terms
                     }
                     values[col[i]] = val * 2  // combine matching 3 terms
@@ -473,8 +473,8 @@ function slideCol(col, up){
                     slide = true
                 }
                 else if(val == compVal){
-                    if((val / 6)%1 == 0){
-                        break       // break for two 6 terms
+                    if(mod(val,2) == 0){
+                        break       // break for two6 terms
                     }
                     values[col[i]] = val * 2  // combine matching 3 terms
                     values[col[j]] = 0
