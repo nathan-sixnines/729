@@ -1,0 +1,743 @@
+<div id="container">
+<canvas id="tileCanvas"></canvas>
+<canvas id="arrowCanvas"></canvas>
+</div>
+
+<style>
+body { 
+       margin: 0; 
+       padding: 0
+     }
+#tileCanvas { 
+     position: absolute;
+     left: 0;
+     top: 0;
+     z-indez: 0;
+     width: 100%; 
+     height: 100%; 
+     overflow: hidden
+   }
+#arrowCanvas { 
+     position: absolute;
+     left: 0;
+     top: 0;
+     z-index: 0;
+     width: 100%; 
+     height: 100%; 
+     overflow: hidden
+   }
+</style>
+
+<script>
+// https://gist.github.com/joates/6584908
+function linspace(a,b,n) {
+    if(typeof n === "undefined") n = Math.max(Math.round(b-a)+1,1);
+    if(n<2) { return n===1?[a]:[]; }
+    var i,ret = Array(n);
+    n--;
+    for(i=n;i>=0;i--) { ret[i] = (i*b+(n-i)*a)/n; }
+    return ret;
+}
+var angles = linspace(0,Math.PI * 2, 7)
+var slice  = Math.PI / 6
+function mod(n, m) {
+        return ((n % m) + m) % m;
+}
+function circle(x, y, uX, uY, ctx, factor, num, shift, fill){
+    angle = Math.atan2( uY - y, uX - x) / (Math.PI*2)
+    angle1 = Math.floor((Math.abs(angle) * 255 * 2))
+    
+    angle2 = 255 - angle1 
+    smallShift = shift / 100
+    
+        ctx1.strokeStyle="black";
+        ctx.lineWidth=5;
+        ctx.beginPath()
+        ctx.arc(x,y, factor,  0, 2 * Math.PI)
+        ctx.stroke()
+    
+    
+    side1 = angle - .2
+    side2 = angle + .2
+    
+}
+
+function arrow(x, y, lctx, value){
+
+    var distance = 300
+    var angleNum = directions[value]
+    
+    var angle = angles[angleNum]
+    
+    var angle2 = angle - Math.PI + (Math.PI/4)
+    var angle3 = angle - Math.PI - (Math.PI/4)
+    
+    ret = offset(x, y, angleNum , distance/3)
+    var startX = ret[0]
+    var startY = ret[1]
+    
+    ret = offset(x, y, angleNum , distance)
+    var arrowX = ret[0]
+    var arrowY = ret[1]
+    
+    ret = offsetExact(arrowX, arrowY, angle2 , distance/4)
+    var arrowX2 = ret[0]
+    var arrowY2 = ret[1]
+    
+    ret = offsetExact(arrowX, arrowY, angle3 , distance/4)
+    var arrowX3 = ret[0]
+    var arrowY3 = ret[1]
+    
+    console.log(angle.toString())
+    console.log(angle2.toString())
+    console.log(angle3.toString())
+    
+    lctx.lineWidth=5;
+    lctx.beginPath()
+    lctx.moveTo(startX,startY)  // start 1/3 the way towards the end
+    lctx.lineTo(arrowX,arrowY)
+    lctx.lineTo(arrowX2,arrowY2)
+    lctx.moveTo(arrowX,arrowY)
+    lctx.lineTo(arrowX3,arrowY3)
+    lctx.lineStyle = 'black'
+    lctx.stroke()
+
+}
+
+var count = 0 
+
+var colR1 = [12,13,14]
+var colR2 = [11,3,4,15]
+var colR3 = [10,2,0,5,16]
+var colR4 = [9,1,6,17]
+var colR5 = [8,7,18]
+
+var colG1 = [10,11,12]
+var colG2 = [9,2,3,13]
+var colG3 = [8,1,0,4,14]
+var colG4 = [7,6,5,15]
+var colG5 = [18,17,16]
+
+var colB1 = [8,9,10]
+var colB2 = [7,1,2,11]
+var colB3 = [18,6,0,3,12]
+var colB4 = [17,5,4,13]
+var colB5 = [16,15,14]
+
+var values = new Array(19).fill(0)
+
+var leftArrow  = false
+var upArrow    = false
+var rightArrow = false
+var downArrow  = false
+
+var enterKey   = false
+
+function hexagon(x, y, ctx, value){
+   
+    var fill = false
+    
+    //console.log(fill)
+    
+
+    var fillG = 0
+    var fillR = 0
+    if(value % 6 == 0){
+        fillR = mod(value * 50,255)
+    } else {
+    
+        fillG = mod(value * 51,255)
+    }
+
+    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
+   
+    if(value != 0){
+    
+        fill = true
+        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+    }else {
+    
+        ctx.fillStyle = "rgba(245,245,220, 1)";
+    
+    }
+   
+    //console.log(fillB)
+   
+    // this is more complicated now because of curved corners
+    // if you want to see how the basic version works look at the old function
+   
+    var radius = 10
+   
+    ctx.beginPath()
+    ret = offset2(x, y, 0 , 100)  // starting from angle 4 makes the hexagon in the proper place (I think)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    ret = offset2(cornerX, cornerY, 4 , 8)
+    var curveX1 = ret[0]
+    var curveY1 = ret[1]
+    //ctx.fillText("cu1",curveX1 , curveY1)
+    //ctx.fillText("co1",cornerX , cornerY)
+    
+    var arcRets = []
+    
+    ctx.moveTo(curveX1, curveY1)
+    for(var h = 0; h < 6; h++){
+        
+        ret = offset2(cornerX, cornerY, directions[h] , 8)
+        curveX2 = ret[0]
+        curveY2 = ret[1]
+        //ctx.fillText("cu"+h,curveX2 , curveY2)
+        //ctx.quadraticCurveTo(cornerX,cornerY, curveX2,curveY2)
+        ctx.lineTo(curveX2,curveY2)
+        
+        arcRets.push(towards(cornerX,cornerY,x,y,radius+2))
+       
+        ret = offset2(cornerX, cornerY, directions[h] , 92)
+        curveX1 = ret[0]
+        curveY1 = ret[1]
+        ctx.lineTo(curveX1,curveY1)
+        ret = offset2(cornerX, cornerY, directions[h] , 100)
+        cornerX = ret[0]
+        cornerY = ret[1]
+        //ctx.fillText("cu"+h,curveX1 , curveY1)
+        //ctx.fillText("co"+h,cornerX , cornerY)
+    }
+    
+    var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
+    
+    ret = offset2(cornerX, cornerY, directions[h] , 10)
+    curveX2 = ret[0]
+    curveY2 = ret[1]
+    
+    //ctx.quadraticCurveTo(cornerX,cornerY, curveX2,curveY2)
+    ctx.closePath()
+    
+    
+    console.log(ctx.fillStyle)
+    ctx.fill()
+    for(var h = 0; h < 6; h++){
+        ctx.beginPath()
+        ctx.arc(arcRets[h][0], arcRets[h][1], radius, 0,6.3)
+        ctx.closePath()
+        ctx.fill()
+        //ctx.stroke()
+    }
+    
+    if(fill){
+        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        ctx.font="50px Georgia";
+        ctx.fillText(value.toString(), x- 15, y)
+    }
+   //ctx.stroke()
+   
+
+}
+
+function hexagonOld(x, y, ctx, value){
+   
+    var fill = false
+    
+    if(value != 0){
+        fill = true
+    }
+    
+    //console.log(fill)
+    
+
+    var fillG = 0
+    var fillR = 0
+    if(value % 6 == 0){
+        fillR = mod(value * 50,255)
+    } else {
+    
+        fillG = mod(value * 51,255)
+    }
+
+    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
+   
+    console.log(fillB)
+   
+    ctx.beginPath()
+    var first = true
+    var firstX = null
+    var firstY = null
+    for(var h = 0; h < 6; h++){
+        ret = offset2(x, y, directions[h] , 100)
+        var hexX1 = ret[0]
+        var hexY1 = ret[1]
+        arcRets.push(towards(hexX1,hexY1,x,y,radius))
+        if(first){
+            ctx.moveTo(hexX, hexY)
+            first = false
+            firstX = hexX
+            firstY = hexY
+        }
+        else{
+            ctx.lineTo(hexX, hexY)
+        }
+    }
+    
+    var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
+    
+    //console.log(value)
+    //console.log(colorString)
+    
+    ctx.lineTo(firstX, firstY)
+    ctx.closePath()
+    ctx.lineWidth=1;
+    if(fill){
+        ctx.lineWidth=5;
+        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+        console.log(ctx.fillStyle)
+        ctx.fill()
+        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        ctx.font="50px Georgia";
+        ctx.fillText(value.toString(), x- 15, y)
+        ctx.fillStyle = "#000000"
+   }
+   ctx.stroke()
+}
+
+function towards(x1,y1,x2,y2,distance){
+
+    var diffX = x2 - x1
+    var diffY = y2 - y1
+
+    var mag = Math.sqrt(diffX*diffX + diffY*diffY)
+    var outX = x1 + diffX * distance / mag
+    var outY = y1 + diffY * distance / mag
+    
+    return [outX,outY]
+}
+
+// these two use the angle number to look up the exact angle from the angles list
+function offset(x, y, angle, factor){
+    retX = x + (Math.sin(angles[angle] + slice)) * factor
+    retY = y + (Math.cos(angles[angle] + slice)) * factor
+    
+    return [retX,retY]
+}
+function offset2(x, y, angle, factor){
+    retX = x + (Math.sin(angles[angle])) * factor
+    retY = y + (Math.cos(angles[angle])) * factor
+    
+    return [retX,retY]
+}
+// this one uses the angle in radians instead of a lookup index
+function offsetExact(x, y, angle, factor){
+    retX = x + (Math.sin(angle + slice)) * factor
+    retY = y + (Math.cos(angle + slice)) * factor
+    
+    return [retX,retY]
+}
+
+var canvas1 = document.getElementById("tileCanvas");
+var ctx1    = canvas1.getContext("2d");
+var canvas2 = document.getElementById("arrowCanvas");
+var ctx2    = canvas2.getContext("2d");
+
+
+ctx1.canvas.width  = window.innerWidth;
+ctx1.canvas.height = window.innerHeight;
+ctx2.canvas.width  = window.innerWidth;
+ctx2.canvas.height = window.innerHeight;
+
+//https://www.quirksmode.org/dom/w3c_cssom.html 
+//console.log(angles)
+//console.log(slice)
+var canvasLeft = canvas1.offsetLeft;
+var canvasTop  = canvas1.offsetTop;
+var count = 0
+var drawX = 520
+var drawY = 520
+var cicleSize = 200
+var directions = [2,3,4,5,0,1]
+var posX = []
+var posY = []
+posX.push(drawX)
+posY.push(drawY)
+for(var i = 0; i < 12; i++){
+        
+    for(var j = 0; j < i*6; j++){
+    
+    
+        ret = offset(drawX, drawY, directions[Math.floor(j / i)], cicleSize)
+        drawX = ret[0]
+        drawY = ret[1]
+        posX.push(drawX)
+        posY.push(drawY)
+       
+    }
+    
+    ret = offset(drawX, drawY, 6, cicleSize)
+    drawX = ret[0]
+    drawY = ret[1]
+}
+var shift = 0
+var shift2 = 0
+function drawStuff(){
+
+    console.log("drawstuff")
+
+    ctx1.clearRect(0,0,canvas1.width,canvas1.height)
+    ctx1.fillStyle='black'
+    ctx1.lineStyle='black'
+
+    count = 0
+    drawX = 0
+    drawY = 0
+    
+    ctx1.fillStyle="#000000";
+    
+    for(var i = 0; i < 19; i++){  //posX.length
+    
+        //circle(posX[i], posY[i], pixX, pixY, ctx1, cicleSize, count++, shift, false)  
+        hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+   
+    }
+    
+}
+
+function slideCol(col, up){
+
+    var slide = false
+
+    if(up){   // slide up
+        for(var i = 0; i < col.length; i++){
+            var val = values[col[i]]
+            
+            //console.log("col[I]:  " + col[i].toString())
+            //console.log("val:     " + val.toString())
+            
+            for(var j = i+1; j < (col.length); j++){
+                var compVal = values[col[j]]
+                
+                //console.log("col[J]:  " +  col[j].toString())
+                //console.log("compVal: " +  compVal.toString())
+                if(compVal == 0){
+                    continue
+                }
+                else if(val == 0){  // swoop in for 0
+                    values[col[i]] = compVal  
+                    values[col[j]] = 0
+                    val = values[col[i]]
+                    slide = true
+                }
+                else if(val == compVal){
+                    if((val / 6)%1 == 0){
+                        break       // break for two 6 terms
+                    }
+                    values[col[i]] = val * 2  // combine matching 3 terms
+                    values[col[j]] = 0
+                    val = values[col[i]]
+                    slide = true
+                } else if(val != compVal){
+                    if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
+                        values[col[i]] = val + compVal  // combine matching 6 and 3 terms
+                        values[col[j]] = 0
+                        val = values[col[i]]
+                        slide = true
+                    } else{
+                        break  // break for whatever else     
+                    }
+                }
+            }
+        }
+    }
+    else {   // slide down
+        for(var i = col.length-1; i >= 0; i--){
+            var val = values[col[i]]
+            
+            //console.log(i)
+            
+            //console.log("col[I]:  " + col[i].toString())
+            //console.log("val:     " + val.toString())
+            for(var j = i-1; j >= 0; j--){
+                var compVal = values[col[j]]
+                
+                //console.log("col[J]:  " +  col[j].toString())
+                //console.log("compVal: " +  compVal.toString())
+                if(compVal == 0){
+                    continue
+                }
+                if(val == 0){  // swoop in for 0
+                    values[col[i]] = compVal  
+                    values[col[j]] = 0
+                    val = values[col[i]]
+                    slide = true
+                }
+                else if(val == compVal){
+                    if((val / 6)%1 == 0){
+                        break       // break for two 6 terms
+                    }
+                    values[col[i]] = val * 2  // combine matching 3 terms
+                    values[col[j]] = 0
+                    val = values[col[i]]
+                    slide = true
+                } else if(val != compVal){
+                    if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
+                        values[col[i]] = val + compVal  // combine matching 6 and 3 terms
+                        values[col[j]] = 0
+                        val = values[col[i]]
+                        slide = true
+                    } else{
+                        break  // break for whatever else     
+                    }
+                }
+            }
+        }
+    }
+    if(slide){
+        return 1
+    }
+    else {
+        return 0
+    }
+}
+
+function addRandom(){
+
+    var pickList = []
+
+    for(var i = 0; i < values.length; i++){
+        if(values[i] == 0){
+            pickList.push(i)
+        }
+    }
+    var pick = pickList[Math.floor(Math.random()*pickList.length)];
+    
+    if(Math.random() > 5/9){
+        values[pick] = 3
+    } else {
+        values[pick] = 1
+    }
+    //values[0] = 3
+  
+}
+
+function slideR(up){
+    var a = slideCol(colR1,up)
+    var b = slideCol(colR2,up)
+    var c = slideCol(colR3,up)
+    var d = slideCol(colR4,up)
+    var e = slideCol(colR5,up)
+    if(a+b+c+d+e > 0){
+        addRandom()
+    }
+    drawStuff()
+}
+function slideG(up){
+    var a = slideCol(colG1,up)
+    var b =slideCol(colG2,up)
+    var c = slideCol(colG3,up)
+    var d = slideCol(colG4,up)
+    var e = slideCol(colG5,up)
+    if(a+b+c+d+e > 0){
+        addRandom()
+    }
+    drawStuff()
+}
+function slideB(up){
+    var a = slideCol(colB1,up)
+    var b = slideCol(colB2,up)
+    var c = slideCol(colB3,up)
+    var d = slideCol(colB4,up)
+    var e = slideCol(colB5,up)
+    if(a+b+c+d+e > 0){
+        addRandom()
+    }
+    drawStuff()
+}
+
+function drawUI(valid){
+
+    var UImidX = canvas2.width - 200
+    var UImidY =  200
+    
+    if(valid){
+    
+        var X1 = UImidX - 15
+        var Y1 = UImidY
+        var X2 = UImidX
+        var Y2 = UImidY + 15
+        var X3 = UImidX + 30
+        var Y3 = UImidY - 30
+        
+        ctx2.moveTo(X1,Y1)
+        ctx2.lineTo(X2,Y2)
+        ctx2.lineTo(X3,Y3)
+        ctx2.lineStyle = 'green'
+        ctx2.stroke()
+ 
+    } else {
+    
+        ctx2.clearRect(0,0,canvas2.width,canvas2.height);
+    
+        var X1 = UImidX - 30
+        var Y1 = UImidX + 30
+        var X2 = UImidX + 30
+        var Y2 = UImidX - 30    
+        var X3 = UImidX - 30
+        var Y3 = UImidX - 30
+        var X4 = UImidX + 30
+        var Y4 = UImidX + 30
+        ctx2.moveTo(X1,Y1)
+        ctx2.lineTo(X2,Y2)
+        ctx2.moveTo(X3,Y3)
+        ctx2.lineTo(X4,Y4)
+        ctx2.lineStyle = 'black'
+        ctx2.stroke()
+    }
+    
+    drawStuff()
+    
+}
+
+
+// direction codes :
+// up right   = 0   
+// up left    = 1
+// left       = 2
+// down left  = 3
+// down right = 4
+// right      = 5
+
+function drawArrows(){
+
+    console.log("drawArrows")
+    
+    ctx2.clearRect(0,0,canvas2.width,canvas2.height);
+    
+    var UImidX = canvas2.width - 200
+    var UImidY =  200
+    
+    if( (leftArrow && rightArrow)  // all the invalid arrow combos
+        || (upArrow && downArrow)
+        || !(leftArrow || rightArrow)){   
+    
+        drawUI(false)
+    
+    } else {  // valid combo
+    
+        if(upArrow || downArrow){
+            if(leftArrow && downArrow){   // down left  = 3
+                arrow(UImidX, UImidY, ctx2, 3)
+                drawUI(true)
+            }
+            if(leftArrow && upArrow){    // up left    = 1
+                arrow(UImidX, UImidY, ctx2, 1)
+                drawUI(true)
+            }
+            if(rightArrow && downArrow){ // down right = 4
+                arrow(UImidX, UImidY, ctx2, 4)
+                drawUI(true)
+            }
+            if(rightArrow && upArrow){   // up right   = 0 
+                arrow(UImidX, UImidY, ctx2, 0)
+                drawUI(true)
+            }
+        } else if(leftArrow){            // left       = 2 
+            arrow(UImidX, UImidY, ctx2, 2)
+            drawUI(true)
+        } else if(rightArrow){           // right      = 5
+            arrow(UImidX, UImidY, ctx2, 5)
+            drawUI(true)
+        }
+    }
+
+}
+
+
+function keyPress(){
+
+    //drawArrows()
+    
+
+}
+
+// w = 87
+// e = 69
+// d = 68
+// x = 88
+// z = 90
+// a = 65
+
+document.onkeydown = function(e) {
+    switch (e.keyCode) {
+        case 13:  // enter      : 13
+            enterKey   = true
+            enterPress()
+            break
+        case 37: // left  arrow: 37
+            leftArrow  = true
+            keyPress()
+            break 
+        case 38: // up    arrow: 38
+            upArrow    = true
+            keyPress()
+            break
+        case 39:  // right arrow: 39
+            rightArrow = true
+            keyPress()
+            break
+        case 40:  // down  arrow: 40
+            downArrow  = true
+            keyPress()
+            break
+        case 87: // w
+            slideB(false)
+            break
+        case 69: // e
+            slideR(true)
+            break    
+        case 68: // d
+            slideG(true)
+            break
+        case 88: // x
+            slideB(true)
+            break
+        case 90: // z
+            slideR(false)
+            break
+        case 65: // a
+            slideG(false)
+            break
+    }
+}
+
+document.onkeyup = function(e) {
+    switch (e.keyCode) {
+        case 13:  // enter      : 13
+            enterKey   = false
+            enterPress()
+            break
+        case 37: // left  arrow: 37
+            leftArrow  = false
+            keyPress()
+            break 
+        case 38: // up    arrow: 38
+            upArrow    = false
+            keyPress()
+            break
+        case 39:  // right arrow: 39
+            rightArrow = false
+            keyPress()
+            break
+        case 40:  // down  arrow: 40
+            downArrow  = false
+            keyPress()
+            break
+    }
+    
+}
+
+//console.log(canvas1)
+
+addRandom()
+drawStuff()
+//console.log(values)
+
+console.log(canvas1.height)
+console.log(canvas1.width)
+
+</script>
