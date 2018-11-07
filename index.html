@@ -1,5 +1,6 @@
 <div id="container">
 <canvas id="tileCanvas"></canvas>
+<canvas id="bgtileCanvas"></canvas>
 <canvas id="arrowCanvas"></canvas>
 </div>
 
@@ -12,7 +13,16 @@ body {
      position: absolute;
      left: 0;
      top: 0;
-     z-indez: 0;
+     zindez: 0;
+     width: 100%; 
+     height: 100%; 
+     overflow: hidden
+   }
+#bgtileCanvas { 
+     position: absolute;
+     left: 0;
+     top: 0;
+     zindez: -1;
      width: 100%; 
      height: 100%; 
      overflow: hidden
@@ -106,25 +116,30 @@ function arrow(x, y, lctx, value){
 
 var count = 0 
 
-var colR1 = [12,13,14]
-var colR2 = [11,3,4,15]
-var colR3 = [10,2,0,5,16]
-var colR4 = [9,1,6,17]
-var colR5 = [8,7,18]
+var colR1  = [12,13,14]
+var colR2  = [11,3,4,15]
+var colR3a = [10,2]
+var colR3b = [5,16]
+var colR4  = [9,1,6,17]
+var colR5  = [8,7,18]
 
-var colG1 = [10,11,12]
-var colG2 = [9,2,3,13]
-var colG3 = [8,1,0,4,14]
-var colG4 = [7,6,5,15]
-var colG5 = [18,17,16]
+var colG1  = [10,11,12]
+var colG2  = [9,2,3,13]
+var colG3a = [8,1]
+var colG3b = [4,14]
+var colG4  = [7,6,5,15]
+var colG5  = [18,17,16]
 
-var colB1 = [8,9,10]
-var colB2 = [7,1,2,11]
-var colB3 = [18,6,0,3,12]
-var colB4 = [17,5,4,13]
-var colB5 = [16,15,14]
+var colB1  = [8,9,10]
+var colB2  = [7,1,2,11]
+var colB3a = [18,6]
+var colB3b = [3,12]
+var colB4  = [17,5,4,13]
+var colB5  = [16,15,14]
 
-var values = new Array(19).fill(0)
+var values     = new Array(19).fill(0)
+var nextValues = new Array(19).fill(0)
+var slides     = new Array(19).fill(0)
 
 var leftArrow  = false
 var upArrow    = false
@@ -132,6 +147,18 @@ var rightArrow = false
 var downArrow  = false
 
 var enterKey   = false
+
+var slideValue  = []
+var slide       = false
+    
+var slideStartX = []
+var slideStartY = []
+    
+var deltaX = []
+var deltaY = []
+    
+var steps = 30
+var step  = 0
 
 function hexagon(x, y, ctx, value){
    
@@ -213,7 +240,7 @@ function hexagon(x, y, ctx, value){
     ctx.closePath()
     
     
-    console.log(ctx.fillStyle)
+    //console.log(ctx.fillStyle)
     ctx.fill()
     
     if(mod(value,2) == 0 && value != 0){
@@ -261,7 +288,7 @@ function hexagonOld(x, y, ctx, value){
 
     var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
    
-    console.log(fillB)
+    //console.log(fillB)
    
     ctx.beginPath()
     var first = true
@@ -294,7 +321,7 @@ function hexagonOld(x, y, ctx, value){
     if(fill){
         ctx.lineWidth=5;
         ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-        console.log(ctx.fillStyle)
+        //console.log(ctx.fillStyle)
         ctx.fill()
         ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
         ctx.font="50px Georgia";
@@ -339,14 +366,22 @@ function offsetExact(x, y, angle, factor){
 
 var canvas1 = document.getElementById("tileCanvas");
 var ctx1    = canvas1.getContext("2d");
-var canvas2 = document.getElementById("arrowCanvas");
+var canvas2 = document.getElementById("bgtileCanvas");
 var ctx2    = canvas2.getContext("2d");
+var canvas3 = document.getElementById("arrowCanvas");
+var ctx3    = canvas3.getContext("2d");
 
 
 ctx1.canvas.width  = window.innerWidth;
 ctx1.canvas.height = window.innerHeight;
 ctx2.canvas.width  = window.innerWidth;
 ctx2.canvas.height = window.innerHeight;
+ctx3.canvas.width  = window.innerWidth;
+ctx3.canvas.height = window.innerHeight;
+
+canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
+canvas2.style.zIndex = -1
+
 
 //https://www.quirksmode.org/dom/w3c_cssom.html 
 //console.log(angles)
@@ -381,9 +416,9 @@ for(var i = 0; i < 12; i++){
 }
 var shift = 0
 var shift2 = 0
-function drawStuff(){
+function drawLoop(){
 
-    console.log("drawstuff")
+    //console.log("drawstuff")
 
     ctx1.clearRect(0,0,canvas1.width,canvas1.height)
     ctx1.fillStyle='black'
@@ -395,28 +430,71 @@ function drawStuff(){
     
     ctx1.fillStyle="#000000";
     
-    for(var i = 0; i < 19; i++){  //posX.length
+    if(step >= steps){
+        slide = false
+        step  = 0
+        
+        //console.log("values")
+        //console.log(values)
+        //console.log("nextValues")
+        //console.log(nextValues)
+        
+        values = nextValues.slice()
+    }
     
-        //circle(posX[i], posY[i], pixX, pixY, ctx1, cicleSize, count++, shift, false)  
-        hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+    if(slide){
+            //for(var i = 1; i < 19; i++){  //posX.length
+            //    hexagon(posX[i], posY[i], ctx1, 0)// + "|" + i.toString()) //values[i])
+            //}
+            
+            // var slideValue  = [] 
+            // var slideStartX = []
+            // var slideStartY = []
+            // var deltaX = []
+            // var deltaY = []
+            //var steps = 200
+            //var step  = 0
+            
+            for(var i = 0; i < slideValue.length; i++){
+            
+                if(slideValue[i] != 0){
+            
+                    hexagon(slideStartX[i] + deltaX[i] * step,
+                            slideStartY[i] + deltaY[i] * step,
+                            ctx1,
+                            slideValue[i])
+                        
+                }
+            }
+            
+            step = step + 1 // I like this better than ++ now idk why. Like you can tell at a glance it's doing assignment
+    } else {
+        for(var i = 1; i < 19; i++){  //posX.length
+            if(values[i] != 0){
+                hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+            }
+        }
    
     }
     
+    window.requestAnimationFrame(drawLoop)
 }
 
 function slideCol(col, up){
 
-    var slide = false
+    var slide = false   // this one we return an allows us to keep track if anything slid at all
 
     if(up){   // slide up
         for(var i = 0; i < col.length; i++){
-            var val = values[col[i]]
+        
+            var combine = false
+            var val = nextValues[col[i]]
             
             //console.log("col[I]:  " + col[i].toString())
             //console.log("val:     " + val.toString())
             
             for(var j = i+1; j < (col.length); j++){
-                var compVal = values[col[j]]
+                var compVal = nextValues[col[j]]
                 
                 //console.log("col[J]:  " +  col[j].toString())
                 //console.log("compVal: " +  compVal.toString())
@@ -424,42 +502,47 @@ function slideCol(col, up){
                     continue
                 }
                 else if(val == 0){  // swoop in for 0
-                    values[col[i]] = compVal  
-                    values[col[j]] = 0
-                    val = values[col[i]]
+                    nextValues[col[i]] = compVal  
+                    nextValues[col[j]] = 0
+                    val = nextValues[col[i]]
                     slide = true
+                    slides[col[j]] = col[i]
                 }
                 else if(val == compVal){
                     if(mod(val,2) == 0){
                         break       // break for two 6 terms
                     }
-                    values[col[i]] = val * 2  // combine matching 3 terms
-                    values[col[j]] = 0
-                    val = values[col[i]]
+                    nextValues[col[i]] = val * 2  // combine matching 3 terms
+                    nextValues[col[j]] = 0
+                    val = nextValues[col[i]]
+                    slides[col[j]] = col[i]
                     slide = true
+                    break // breaking here prevents more than two tiles from combining at once
+                          // removing this still works, but multiple tiles will combine ie (3 3 3 -> 9 instead of 3 3 3 - > 6 3)
                 } else if(val != compVal){
                     if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
-                        values[col[i]] = val + compVal  // combine matching 6 and 3 terms
-                        values[col[j]] = 0
-                        val = values[col[i]]
+                        nextValues[col[i]] = val + compVal  // combine matching 6 and 3 terms
+                        nextValues[col[j]] = 0
+                        val = nextValues[col[i]]
+                        slides[col[j]] = col[i]
                         slide = true
+                        break  // same deal
                     } else{
                         break  // break for whatever else     
                     }
                 }
             }
         }
-    }
-    else {   // slide down
+    } else {   // slide down
         for(var i = col.length-1; i >= 0; i--){
-            var val = values[col[i]]
+            var val = nextValues[col[i]]
             
             //console.log(i)
             
             //console.log("col[I]:  " + col[i].toString())
             //console.log("val:     " + val.toString())
             for(var j = i-1; j >= 0; j--){
-                var compVal = values[col[j]]
+                var compVal = nextValues[col[j]]
                 
                 //console.log("col[J]:  " +  col[j].toString())
                 //console.log("compVal: " +  compVal.toString())
@@ -467,25 +550,31 @@ function slideCol(col, up){
                     continue
                 }
                 if(val == 0){  // swoop in for 0
-                    values[col[i]] = compVal  
-                    values[col[j]] = 0
-                    val = values[col[i]]
+                    nextValues[col[i]] = compVal  
+                    nextValues[col[j]] = 0
+                    val = nextValues[col[i]]
+                    slides[col[j]] = col[i]
                     slide = true
                 }
                 else if(val == compVal){
                     if(mod(val,2) == 0){
                         break       // break for two6 terms
                     }
-                    values[col[i]] = val * 2  // combine matching 3 terms
-                    values[col[j]] = 0
-                    val = values[col[i]]
+                    nextValues[col[i]] = val * 2  // combine matching 3 terms
+                    nextValues[col[j]] = 0
+                    val = nextValues[col[i]]
+                    slides[col[j]] = col[i]
                     slide = true
+                    break // breaking here prevents more than two tiles from combining at once
+                          // removing this still works, but multiple tiles will combine ie (3 3 3 -> 9 instead of 3 3 3 - > 6 3)
                 } else if(val != compVal){
                     if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
-                        values[col[i]] = val + compVal  // combine matching 6 and 3 terms
-                        values[col[j]] = 0
-                        val = values[col[i]]
+                        nextValues[col[i]] = val + compVal  // combine matching 6 and 3 terms
+                        nextValues[col[j]] = 0
+                        val = nextValues[col[i]]
+                        slides[col[j]] = col[i]
                         slide = true
+                        break
                     } else{
                         break  // break for whatever else     
                     }
@@ -493,12 +582,20 @@ function slideCol(col, up){
             }
         }
     }
+    
+    for (var i = 0; i < col.length; i++){
+        if(slides[col[i]] == 0 && nextValues[col[i]] != 0){
+            slides[col[i]] = col[i]  // put in identity slide (no slide) in slide array to make drawing tiles during animation easier
+        }
+    }
+    
     if(slide){
         return 1
     }
     else {
         return 0
     }
+    
 }
 
 function addRandom(){
@@ -506,53 +603,68 @@ function addRandom(){
     var pickList = []
 
     for(var i = 0; i < values.length; i++){
-        if(values[i] == 0){
+        if(nextValues[i] == 0){
             pickList.push(i)
         }
     }
-    var pick = pickList[Math.floor(Math.random()*pickList.length)];
+    var pick = pickList[Math.floor(Math.random()*(pickList.length-1))+1];
     
     if(Math.random() > 5/9){
-        values[pick] = 3
+        nextValues[pick] = 3
     } else {
-        values[pick] = 1
+        nextValues[pick] = 1
     }
     //values[0] = 3
   
 }
 
 function slideR(up){
-    var a = slideCol(colR1,up)
-    var b = slideCol(colR2,up)
-    var c = slideCol(colR3,up)
-    var d = slideCol(colR4,up)
-    var e = slideCol(colR5,up)
-    if(a+b+c+d+e > 0){
+
+    nextValues = values.slice()
+    slides = new Array(19).fill(0)  // slides go from current position index (old values) to target position index
+    
+    var a  = slideCol(colR1,up)
+    var b  = slideCol(colR2,up)
+    var c1 = slideCol(colR3a,up)
+    var c2 = slideCol(colR3b,up)
+    var d  = slideCol(colR4,up)
+    var e  = slideCol(colR5,up)
+    if(a+b+c1+c2+d+e > 0){
         addRandom()
     }
-    drawStuff()
+    animate()
 }
 function slideG(up){
-    var a = slideCol(colG1,up)
-    var b =slideCol(colG2,up)
-    var c = slideCol(colG3,up)
-    var d = slideCol(colG4,up)
-    var e = slideCol(colG5,up)
-    if(a+b+c+d+e > 0){
+
+    nextValues = values.slice()
+    slides = new Array(19).fill(0)  // slides go from current position index(old values) to target position index
+    
+    var a  = slideCol(colG1,up)
+    var b  = slideCol(colG2,up)
+    var c1 = slideCol(colG3a,up)
+    var c2 = slideCol(colG3b,up)
+    var d  = slideCol(colG4,up)
+    var e  = slideCol(colG5,up)
+    if(a+b+c1+c2+d+e > 0){
         addRandom()
     }
-    drawStuff()
+    animate()
 }
 function slideB(up){
-    var a = slideCol(colB1,up)
-    var b = slideCol(colB2,up)
-    var c = slideCol(colB3,up)
-    var d = slideCol(colB4,up)
-    var e = slideCol(colB5,up)
-    if(a+b+c+d+e > 0){
+
+    nextValues = values.slice()
+    slides = new Array(19).fill(0)  // slides go from current position index (old values) to target position index
+    
+    var a  = slideCol(colB1,up)
+    var b  = slideCol(colB2,up)
+    var c1 = slideCol(colB3a,up)
+    var c2 = slideCol(colB3b,up)
+    var d  = slideCol(colB4,up)
+    var e  = slideCol(colB5,up)
+    if(a+b+c1+c2+d+e > 0){
         addRandom()
     }
-    drawStuff()
+    animate()
 }
 
 function drawUI(valid){
@@ -653,6 +765,36 @@ function drawArrows(){
 
 }
 
+function animate(){
+
+    slideValue  = []
+    slide       = false
+    
+    slideStartX = []
+    slideStartY = []
+    
+    deltaX = []
+    deltaY = []
+
+    for (var i = 0; i < slides.length; i++){
+        if(slides[i] != 0){
+            slideStartX.push(posX[i])
+            slideStartY.push(posY[i])
+            
+            diffX = (posX[slides[i]] - posX[i]) / steps   // subtract original location from target
+            diffY = (posY[slides[i]] - posY[i]) / steps   // because we want to end up at target by adding it back 
+            
+            deltaX.push(diffX)
+            deltaY.push(diffY)
+            
+            slideValue.push(values[i])
+            
+        }
+    }
+    
+    slide = true
+
+}
 
 function keyPress(){
 
@@ -739,11 +881,20 @@ document.onkeyup = function(e) {
 
 //console.log(canvas1)
 
+
+for(var i = 1; i < 19; i++){  //posX.length
+   
+    hexagon(posX[i], posY[i], ctx2, values[i])// + "|" + i.toString()) //values[i])
+   
+}
+
 addRandom()
-drawStuff()
+addRandom()
+values = nextValues.slice()
+drawLoop()
 //console.log(values)
 
-console.log(canvas1.height)
-console.log(canvas1.width)
+console.log(canvas1.position)
+console.log(canvas2.position)
 
 </script>
