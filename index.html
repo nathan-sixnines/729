@@ -4,6 +4,26 @@
 <canvas id="arrowCanvas"></canvas>
 </div>
 
+<img id="key0" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key-0.png" hidden>
+<img id="key1" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key1.png" hidden>
+<img id="key2" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key2.png" hidden>
+<img id="key3" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key3.png" hidden>
+<img id="key4" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key4.png" hidden>
+<img id="key5" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key5.png" hidden>
+<img id="key6" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key6.png" hidden>
+<img id="key7" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key7.png" hidden>
+<img id="key8" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key8.png" hidden>
+
+<img id="lock0" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock-0.png" hidden>
+<img id="lock1" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock1.png" hidden>
+<img id="lock2" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock2.png" hidden>
+<img id="lock3" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock3.png" hidden>
+<img id="lock4" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock4.png" hidden>
+<img id="lock5" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock5.png" hidden>
+<img id="lock6" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock6.png" hidden>
+<img id="lock7" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock7.png" hidden>
+<img id="lock8" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock8.png" hidden>
+
 <style>
 body { 
        margin: 0; 
@@ -114,6 +134,29 @@ function arrow(x, y, lctx, value){
 
 }
 
+var keyImgList  = []
+var lockImgList = []
+
+keyImgList.push(document.getElementById('key0'))
+keyImgList.push(document.getElementById('key1'))
+keyImgList.push(document.getElementById('key2'))
+keyImgList.push(document.getElementById('key3'))
+keyImgList.push(document.getElementById('key4'))
+keyImgList.push(document.getElementById('key5'))
+keyImgList.push(document.getElementById('key6'))
+keyImgList.push(document.getElementById('key7'))
+keyImgList.push(document.getElementById('key8'))
+
+lockImgList.push(document.getElementById('lock0'))
+lockImgList.push(document.getElementById('lock1'))
+lockImgList.push(document.getElementById('lock2'))
+lockImgList.push(document.getElementById('lock3'))
+lockImgList.push(document.getElementById('lock4'))
+lockImgList.push(document.getElementById('lock5'))
+lockImgList.push(document.getElementById('lock6'))
+lockImgList.push(document.getElementById('lock7'))
+lockImgList.push(document.getElementById('lock8'))
+
 var count = 0 
 
 var colR1  = [12,13,14]
@@ -181,7 +224,8 @@ function hexagon(x, y, ctx, value){
     if(value != 0){
     
         fill = true
-        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+        //ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+        ctx.fillStyle = "rgba(135,135,135, 1)";
     }else {
     
         ctx.fillStyle = "rgba(245,245,220, 1)";
@@ -257,9 +301,26 @@ function hexagon(x, y, ctx, value){
     
     
     if(fill){
-        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
-        ctx.font="50px Georgia";
-        ctx.fillText(value.toString(), x- 15, y)
+    
+        var img = null
+    
+        var power = Math.floor(Math.log(value) / 1.09861229 + .01)  // that number is Math.log(3) to get log base 3, +.01 so the floor has some wiggle room
+    
+        if(mod(value,2) == 0){
+        
+            img = lockImgList[power]
+        
+        } else {
+        
+            img = keyImgList[power]
+        
+        }
+    
+        ctx.drawImage(img, x-75, y-75, 150, 150)
+    
+        //ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        //ctx.font="50px Georgia";
+        //ctx.fillText(value.toString(), x- 15, y)
     }
    //ctx.stroke()
    
