@@ -424,6 +424,8 @@ function drawLoop(){
     ctx1.clearRect(0,0,canvas1.width,canvas1.height)
     ctx1.fillStyle='black'
     ctx1.lineStyle='black'
+    
+    
 
     count = 0
     drawX = 0
@@ -431,6 +433,14 @@ function drawLoop(){
     
     ctx1.fillStyle="#000000";
     
+    var score = 0
+    for(var i = 0; i<values.length;i++){
+    
+        score += values[i]
+    
+    }
+    
+    ctx1.fillText("Score : "+ score.toString(), 850, 100) 
     if(step >= steps){
         slide = false
         step  = 0
