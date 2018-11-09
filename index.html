@@ -4,27 +4,8 @@
 <canvas id="arrowCanvas"></canvas>
 </div>
 
-<img id="key0" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key-0.png" hidden>
-<img id="key1" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key1.png" hidden>
-<img id="key2" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key2.png" hidden>
-<img id="key3" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key3.png" hidden>
-<img id="key4" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key4.png" hidden>
-<img id="key5" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key5.png" hidden>
-<img id="key6" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key6.png" hidden>
-<img id="key7" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key7.png" hidden>
-<img id="key8" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/key8.png" hidden>
-
-<img id="lock0" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock-0.png" hidden>
-<img id="lock1" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock1.png" hidden>
-<img id="lock2" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock2.png" hidden>
-<img id="lock3" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock3.png" hidden>
-<img id="lock4" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock4.png" hidden>
-<img id="lock5" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock5.png" hidden>
-<img id="lock6" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock6.png" hidden>
-<img id="lock7" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock7.png" hidden>
-<img id="lock8" src="https://raw.githubusercontent.com/Aeium/6561/master/graphics/lock8.png" hidden>
-
 <style>
+
 body { 
        margin: 0; 
        padding: 0
@@ -134,49 +115,26 @@ function arrow(x, y, lctx, value){
 
 }
 
-var keyImgList  = []
-var lockImgList = []
-
-keyImgList.push(document.getElementById('key0'))
-keyImgList.push(document.getElementById('key1'))
-keyImgList.push(document.getElementById('key2'))
-keyImgList.push(document.getElementById('key3'))
-keyImgList.push(document.getElementById('key4'))
-keyImgList.push(document.getElementById('key5'))
-keyImgList.push(document.getElementById('key6'))
-keyImgList.push(document.getElementById('key7'))
-keyImgList.push(document.getElementById('key8'))
-
-lockImgList.push(document.getElementById('lock0'))
-lockImgList.push(document.getElementById('lock1'))
-lockImgList.push(document.getElementById('lock2'))
-lockImgList.push(document.getElementById('lock3'))
-lockImgList.push(document.getElementById('lock4'))
-lockImgList.push(document.getElementById('lock5'))
-lockImgList.push(document.getElementById('lock6'))
-lockImgList.push(document.getElementById('lock7'))
-lockImgList.push(document.getElementById('lock8'))
-
 var count = 0 
 
 var colR1  = [12,13,14]
 var colR2  = [11,3,4,15]
-var colR3a = [10,2]
-var colR3b = [5,16]
+var colR3a = [10,2,0,5,16]
+var colR3b = []//[5,16]
 var colR4  = [9,1,6,17]
 var colR5  = [8,7,18]
 
 var colG1  = [10,11,12]
 var colG2  = [9,2,3,13]
-var colG3a = [8,1]
-var colG3b = [4,14]
+var colG3a = [8,1,0,4,14]
+var colG3b = []//[4,14]
 var colG4  = [7,6,5,15]
 var colG5  = [18,17,16]
 
 var colB1  = [8,9,10]
 var colB2  = [7,1,2,11]
-var colB3a = [18,6]
-var colB3b = [3,12]
+var colB3a = [18,6,0,3,12]
+var colB3b = []//[3,12]
 var colB4  = [17,5,4,13]
 var colB5  = [16,15,14]
 
@@ -224,8 +182,7 @@ function hexagon(x, y, ctx, value){
     if(value != 0){
     
         fill = true
-        //ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-        ctx.fillStyle = "rgba(135,135,135, 1)";
+        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
     }else {
     
         ctx.fillStyle = "rgba(245,245,220, 1)";
@@ -301,26 +258,9 @@ function hexagon(x, y, ctx, value){
     
     
     if(fill){
-    
-        var img = null
-    
-        var power = Math.floor(Math.log(value) / 1.09861229 + .01)  // that number is Math.log(3) to get log base 3, +.01 so the floor has some wiggle room
-    
-        if(mod(value,2) == 0){
-        
-            img = lockImgList[power]
-        
-        } else {
-        
-            img = keyImgList[power]
-        
-        }
-    
-        ctx.drawImage(img, x-75, y-75, 150, 150)
-    
-        //ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
-        //ctx.font="50px Georgia";
-        //ctx.fillText(value.toString(), x- 15, y)
+        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        ctx.font='68px KulminoituvaRegular';
+        ctx.fillText(value.toString(), x- 34, y+10)
     }
    //ctx.stroke()
    
@@ -518,7 +458,7 @@ function drawLoop(){
             
             for(var i = 0; i < slideValue.length; i++){
             
-                if(slideValue[i] != 0){
+                if(slideValue[i] != -1){
             
                     hexagon(slideStartX[i] + deltaX[i] * step,
                             slideStartY[i] + deltaY[i] * step,
@@ -530,7 +470,7 @@ function drawLoop(){
             
             step = step + 1 // I like this better than ++ now idk why. Like you can tell at a glance it's doing assignment
     } else {
-        for(var i = 1; i < 19; i++){  //posX.length
+        for(var i = 0; i < 19; i++){  //posX.length
             if(values[i] != 0){
                 hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
             }
@@ -541,7 +481,9 @@ function drawLoop(){
     window.requestAnimationFrame(drawLoop)
 }
 
-function slideCol(col, up){
+
+/*
+function slideColOld(col, up){
 
     var slide = false   // this one we return an allows us to keep track if anything slid at all
 
@@ -658,9 +600,144 @@ function slideCol(col, up){
     }
     
 }
+*/
+
+// jsperf.com javascript performance website
+
+function slideCol(col, up){
+
+    console.log('slide col')
+
+    var slide = false   // this one we return an allows us to keep track if anything slid at all
+
+    var runValue = 0
+    var run      = 0
+    
+    if(! up){
+    
+        col = col.slice().reverse()  // don't want to reverse original list
+    
+    }
+    
+    var outCol        = []
+
+    var slideStarts   = []
+    
+    var targetMarker  = 0   // index of where slides target
+   
+    //console.log("col")
+    //console.log(col)
+    
+    var zeroGap = false
+    
+    for(var i = 0; i < col.length; i++){
+    
+        //console.log(outCol)
+    
+        var value = values[col[i]]
+        
+        //console.log("value:    " + value.toString())
+        //console.log("runValue: " + runValue.toString())
+        //console.log("run:      " + run.toString())
+        
+        if(value == 0){
+        
+            zeroGap = true
+        
+        } else {
+
+                console.log("targetMarker: " + col[targetMarker].toString()) 
+        
+            if(zeroGap){
+            
+                slide = true
+            
+            }
+        
+            if(value == runValue){
+            
+
+
+                run = run + 1
+                
+                if(run == 2){
+                    
+                    slides[col[i]] = col[targetMarker]
+                    slideStarts.push(col[i])
+                    targetMarker = targetMarker + 1
+                    outCol.push(value)
+                    
+                
+                }
+                
+                else if(run == 3){
+                    slide = true
+                
+                    console.log("run of 3")
+                    console.log(targetMarker)
+                
+                    runValue = 0
+                    run      = 0
+                    outCol.pop(value)
+                    outCol.pop(value)
+                    outCol.push(value * 3)
+                    targetMarker = targetMarker - 2
+                  
+                    slides[col[i]]    = col[targetMarker]
+                    slides[slideStarts[0]] = col[targetMarker]
+                    //slides[slideStarts[1]] = col[targetMarker]
+                    
+                    targetMarker = targetMarker + 1
+                    slideStarts = []
+                  
+                }
+            }
+            
+            else{
+            
+                slideStarts = []
+                slides[col[i]] = col[targetMarker]
+                targetMarker = targetMarker + 1
+                outCol.push(value)
+                
+                runValue   = value
+                run        = 1
+
+            }
+        }
+    }
+    
+    for(var i = 0; i < col.length; i++){
+    
+        if(i < outCol.length){
+            nextValues[col[i]] = outCol[i]
+        }   else {
+            nextValues[col[i]] = 0
+        }
+        
+    }
+    
+    //console.log(outCol)
+
+    
+    //for (var i = 0; i < col.length; i++){
+    //    if(slides[col[i]] == 0 && nextValues[col[i]] != 0){
+    //        slides[col[i]] = col[i]  // put in identity slide (no slide) in slide array to make drawing tiles during animation easier
+    //    }
+    //}
+    
+    if(slide){
+        return 1
+    }
+    else {
+        return 0
+    }
+    
+}
 
 function addRandom(){
 
+    console.log('adding random')
     var pickList = []
 
     for(var i = 0; i < values.length; i++){
@@ -668,61 +745,75 @@ function addRandom(){
             pickList.push(i)
         }
     }
-    var pick = pickList[Math.floor(Math.random()*(pickList.length-1))+1];
+    
+    
+    
+    var pick = pickList[Math.floor(Math.random()*pickList.length)];
     
     if(Math.random() > 5/9){
         nextValues[pick] = 3
     } else {
         nextValues[pick] = 1
     }
-    //values[0] = 3
+    //nextValues[0] = 3
   
 }
 
 function slideR(up){
 
     nextValues = values.slice()
-    slides = new Array(19).fill(0)  // slides go from current position index (old values) to target position index
+    slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
     
     var a  = slideCol(colR1,up)
     var b  = slideCol(colR2,up)
     var c1 = slideCol(colR3a,up)
-    var c2 = slideCol(colR3b,up)
+    //var c2 = slideCol(colR3b,up)
     var d  = slideCol(colR4,up)
     var e  = slideCol(colR5,up)
-    if(a+b+c1+c2+d+e > 0){
+    
+    if(a+b+c1+d+e > 0){
         addRandom()
     }
+    
+    //console.log(values)
+    //console.log(nextValues)
+    //console.log(slides)
+    
     animate()
 }
 function slideG(up){
 
     nextValues = values.slice()
-    slides = new Array(19).fill(0)  // slides go from current position index(old values) to target position index
+    slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
+    
+    console.log(colG3a)
     
     var a  = slideCol(colG1,up)
     var b  = slideCol(colG2,up)
     var c1 = slideCol(colG3a,up)
-    var c2 = slideCol(colG3b,up)
+    //var c2 = slideCol(colG3b,up)
     var d  = slideCol(colG4,up)
     var e  = slideCol(colG5,up)
-    if(a+b+c1+c2+d+e > 0){
+    
+    var sum = a+b+c1+d+e
+    if(sum > 0){
         addRandom()
     }
+        console.log(sum)
     animate()
 }
 function slideB(up){
 
     nextValues = values.slice()
-    slides = new Array(19).fill(0)  // slides go from current position index (old values) to target position index
+    slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
     
     var a  = slideCol(colB1,up)
     var b  = slideCol(colB2,up)
     var c1 = slideCol(colB3a,up)
-    var c2 = slideCol(colB3b,up)
+    //var c2 = slideCol(colB3b,up)
     var d  = slideCol(colB4,up)
     var e  = slideCol(colB5,up)
-    if(a+b+c1+c2+d+e > 0){
+    if(a+b+c1+d+e > 0){
         addRandom()
     }
     animate()
@@ -838,7 +929,14 @@ function animate(){
     deltaY = []
 
     for (var i = 0; i < slides.length; i++){
-        if(slides[i] != 0){
+        if(slides[i] != -1){
+        
+            if(slides[i] == 0){
+            
+                console.log("slide to zero here")
+            
+            }
+        
             slideStartX.push(posX[i])
             slideStartY.push(posY[i])
             
@@ -943,7 +1041,7 @@ document.onkeyup = function(e) {
 //console.log(canvas1)
 
 
-for(var i = 1; i < 19; i++){  //posX.length
+for(var i = 0; i < 19; i++){  //posX.length
    
     hexagon(posX[i], posY[i], ctx2, values[i])// + "|" + i.toString()) //values[i])
    
@@ -951,6 +1049,12 @@ for(var i = 1; i < 19; i++){  //posX.length
 
 addRandom()
 addRandom()
+
+//nextValues[0] = 1
+//nextValues[1] = 2
+//nextValues[4] = 3
+//nextValues[8] = 4
+
 values = nextValues.slice()
 drawLoop()
 //console.log(values)
