@@ -1078,6 +1078,8 @@ function handleTouchMove(evt) {
     
     var rad = Math.atan2(yDiff, xDiff) / Math.PI;
     
+    ctx1.fillText(rad, 500,500)
+    
     if(rad > 1/6 && rad <= 3/6){
     // e
     slideR(true)
