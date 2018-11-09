@@ -1076,30 +1076,38 @@ function handleTouchMove(evt) {
     var xDiff = xDown - xUp;
     var yDiff = yDown - yUp;    
     
-    var rad = Math.atan2(yDiff, xDiff) / Math.PI;
+    var rad = (Math.atan2(yDiff, xDiff) / Math.PI) + 1;
     
-    ctx1.fillText(rad, 500,500)
+    //ctx1.fillText(rad, 500,500)
     
-    if(rad > 1/6 && rad <= 3/6){
+    console.log(rad)
+    
+    if(rad > (1/6) && rad <= (3/6)){
+    console.log('e , rad > 1/6 && rad <= 3/6, rad: ' + rad.toString())
     // e
-    slideR(true)
+    slideB(true)
     }
-    if(rad > 1/2 && rad <= 5/6){
+    else if(rad > (1/2) && rad <= (5/6)){
+    console.log('w , rad > 1/2 && rad <= 5/6, rad: ' + rad.toString())
     // w
-    slideB(false)
+    slideR(false)
     }
-    if(rad > 5/6 && rad <= 7/6){
+    else if(rad > (5/6) && rad <= (7/6)){
+    console.log('a , rad > 5/6 && rad <= 7/6, rad: ' + rad.toString())
     // a
      slideG(false)
     }
-    if(rad > 7/6 && rad <= 9/6){
+    else if(rad > (7/6) && rad <= (9/6)){
+    console.log('z , rad > 7/6 && rad <= 9/6, rad: ' + rad.toString())
     // z
-    slideR(false)
+    slideB(false)
     }
-    if(rad > 9/6 && rad <= 11/6){
-    // x
-    slideB(true)
+    else if(rad > (9/6) && rad <= (11/6)){
+    console.log('x , rad > 9/6 && rad <= 11/6, rad: ' + rad.toString())
+    //  x
+    slideR(true)
     }else{
+    console.log('d , other rad,                rad: ' + rad.toString())
     // d
     slideG(true)
     }
