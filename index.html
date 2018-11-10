@@ -57,89 +57,29 @@ var slice  = Math.PI / 6
 function mod(n, m) {
         return ((n % m) + m) % m;
 }
-function circle(x, y, uX, uY, ctx, factor, num, shift, fill){
-    angle = Math.atan2( uY - y, uX - x) / (Math.PI*2)
-    angle1 = Math.floor((Math.abs(angle) * 255 * 2))
-    
-    angle2 = 255 - angle1 
-    smallShift = shift / 100
-    
-        ctx1.strokeStyle="black";
-        ctx.lineWidth=5;
-        ctx.beginPath()
-        ctx.arc(x,y, factor,  0, 2 * Math.PI)
-        ctx.stroke()
-    
-    
-    side1 = angle - .2
-    side2 = angle + .2
-    
-}
 
-function arrow(x, y, lctx, value){
-
-    var distance = 300
-    var angleNum = directions[value]
-    
-    var angle = angles[angleNum]
-    
-    var angle2 = angle - Math.PI + (Math.PI/4)
-    var angle3 = angle - Math.PI - (Math.PI/4)
-    
-    ret = offset(x, y, angleNum , distance/3)
-    var startX = ret[0]
-    var startY = ret[1]
-    
-    ret = offset(x, y, angleNum , distance)
-    var arrowX = ret[0]
-    var arrowY = ret[1]
-    
-    ret = offsetExact(arrowX, arrowY, angle2 , distance/4)
-    var arrowX2 = ret[0]
-    var arrowY2 = ret[1]
-    
-    ret = offsetExact(arrowX, arrowY, angle3 , distance/4)
-    var arrowX3 = ret[0]
-    var arrowY3 = ret[1]
-    
-    console.log(angle.toString())
-    console.log(angle2.toString())
-    console.log(angle3.toString())
-    
-    lctx.lineWidth=5;
-    lctx.beginPath()
-    lctx.moveTo(startX,startY)  // start 1/3 the way towards the end
-    lctx.lineTo(arrowX,arrowY)
-    lctx.lineTo(arrowX2,arrowY2)
-    lctx.moveTo(arrowX,arrowY)
-    lctx.lineTo(arrowX3,arrowY3)
-    lctx.lineStyle = 'black'
-    lctx.stroke()
-
-}
 
 var count = 0 
 
 var colR1  = [12,13,14]
 var colR2  = [11,3,4,15]
-var colR3a = [10,2,0,5,16]
-var colR3b = []//[5,16]
+var colR3 = [10,2,0,5,16]
 var colR4  = [9,1,6,17]
 var colR5  = [8,7,18]
 
 var colG1  = [10,11,12]
 var colG2  = [9,2,3,13]
-var colG3a = [8,1,0,4,14]
-var colG3b = []//[4,14]
+var colG3 = [8,1,0,4,14]
 var colG4  = [7,6,5,15]
 var colG5  = [18,17,16]
 
 var colB1  = [8,9,10]
 var colB2  = [7,1,2,11]
-var colB3a = [18,6,0,3,12]
-var colB3b = []//[3,12]
+var colB3 = [18,6,0,3,12]
 var colB4  = [17,5,4,13]
 var colB5  = [16,15,14]
+
+var colList = []  // ugh i don't want all all that to a list manually
 
 var values     = new Array(19).fill(0)
 var nextValues = new Array(19).fill(0)
@@ -154,6 +94,9 @@ var enterKey   = false
 
 var slideValue  = []
 var slide       = false
+var update      = true
+    
+var actionQueue = []
     
 var slideStartX = []
 var slideStartY = []
@@ -169,7 +112,8 @@ function hexagon(x, y, ctx, value){
     var fill = false
     
     //console.log(fill)
-    
+    //console.log(x)
+    //console.log(y)
 
     var fillG = 0
     var fillR = 0
@@ -197,13 +141,13 @@ function hexagon(x, y, ctx, value){
     // this is more complicated now because of curved corners
     // if you want to see how the basic version works look at the old function
    
-    var radius = 10
+    var radius = cicleSize/20 
    
     ctx.beginPath()
-    ret = offset2(x, y, 0 , 100)  // starting from angle 4 makes the hexagon in the proper place (I think)
+    ret = offset2(x, y, 0 , cicleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
     var cornerX = ret[0]
     var cornerY = ret[1]
-    ret = offset2(cornerX, cornerY, 4 , 8)
+    ret = offset2(cornerX, cornerY, 4 , cicleSize/20)
     var curveX1 = ret[0]
     var curveY1 = ret[1]
     //ctx.fillText("cu1",curveX1 , curveY1)
@@ -214,7 +158,7 @@ function hexagon(x, y, ctx, value){
     ctx.moveTo(curveX1, curveY1)
     for(var h = 0; h < 6; h++){
         
-        ret = offset2(cornerX, cornerY, directions[h] , 8)
+        ret = offset2(cornerX, cornerY, directions[h] , cicleSize/20)
         curveX2 = ret[0]
         curveY2 = ret[1]
         //ctx.fillText("cu"+h,curveX2 , curveY2)
@@ -223,11 +167,11 @@ function hexagon(x, y, ctx, value){
         
         arcRets.push(towards(cornerX,cornerY,x,y,radius+2))
        
-        ret = offset2(cornerX, cornerY, directions[h] , 92)
+        ret = offset2(cornerX, cornerY, directions[h] , cicleSize*9/20)
         curveX1 = ret[0]
         curveY1 = ret[1]
         ctx.lineTo(curveX1,curveY1)
-        ret = offset2(cornerX, cornerY, directions[h] , 100)
+        ret = offset2(cornerX, cornerY, directions[h] , cicleSize/2)
         cornerX = ret[0]
         cornerY = ret[1]
         //ctx.fillText("cu"+h,curveX1 , curveY1)
@@ -236,7 +180,7 @@ function hexagon(x, y, ctx, value){
     
     var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
     
-    ret = offset2(cornerX, cornerY, directions[h] , 10)
+    ret = offset2(cornerX, cornerY, directions[h] , cicleSize/20)
     curveX2 = ret[0]
     curveY2 = ret[1]
     
@@ -261,9 +205,17 @@ function hexagon(x, y, ctx, value){
     
     
     if(fill){
+        var digits = value.toString().length
+        
+        var fontSize = cicleSize/2.5
+    
         ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
-        ctx.font='68px KulminoituvaRegular';
-        ctx.fillText(value.toString(), x- 34, y+10)
+        ctx.font= fontSize.toString() + 'px KulminoituvaRegular';
+        
+        //https://stackoverflow.com/questions/13771310/center-proportional-font-text-in-an-html5-canvas
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = "center";
+        ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
    
@@ -375,48 +327,106 @@ var ctx2    = canvas2.getContext("2d");
 var canvas3 = document.getElementById("arrowCanvas");
 var ctx3    = canvas3.getContext("2d");
 
+var height = null
+var width  = null
 
-ctx1.canvas.width  = window.innerWidth;
-ctx1.canvas.height = window.innerHeight;
-ctx2.canvas.width  = window.innerWidth;
-ctx2.canvas.height = window.innerHeight;
-ctx3.canvas.width  = window.innerWidth;
-ctx3.canvas.height = window.innerHeight;
+if( window.innerHeight < screen.height){
+    height = window.innerHeight
+} else {
+    height = screen.height
+}
+if( window.innerWidth < screen.width){
+    width = window.innerWidth
+} else {
+    width = screen.width
+}
 
-canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
-canvas2.style.zIndex = -1
+var min = width
 
-
-//https://www.quirksmode.org/dom/w3c_cssom.html 
-//console.log(angles)
-//console.log(slice)
-var canvasLeft = canvas1.offsetLeft;
-var canvasTop  = canvas1.offsetTop;
-var count = 0
-var drawX = 520
-var drawY = 520
-var cicleSize = 200
+var cicleSize = width / 6
 var directions = [2,3,4,5,0,1]
 var posX = []
 var posY = []
-posX.push(drawX)
-posY.push(drawY)
-for(var i = 0; i < 12; i++){
-        
-    for(var j = 0; j < i*6; j++){
-    
-    
-        ret = offset(drawX, drawY, directions[Math.floor(j / i)], cicleSize)
-        drawX = ret[0]
-        drawY = ret[1]
-        posX.push(drawX)
-        posY.push(drawY)
-       
+
+function initCanvas(){
+
+    canvas1 = document.getElementById("tileCanvas");
+    ctx1    = canvas1.getContext("2d");
+    canvas2 = document.getElementById("bgtileCanvas");
+    ctx2    = canvas2.getContext("2d");
+    canvas3 = document.getElementById("arrowCanvas");
+    ctx3    = canvas3.getContext("2d");
+
+    if( window.innerHeight < screen.height){
+        height = window.innerHeight
+    } else {
+        height = screen.height
+    }
+    if( window.innerWidth < screen.width){
+        width = window.innerWidth
+    } else {
+        width = screen.width
     }
     
-    ret = offset(drawX, drawY, 6, cicleSize)
-    drawX = ret[0]
-    drawY = ret[1]
+
+    ctx1.canvas.width  = width//window.innerWidth;
+    ctx1.canvas.height = height//window.innerHeight;
+    ctx2.canvas.width  = width//window.innerWidth;
+    ctx2.canvas.height = height//window.innerHeight;
+    ctx3.canvas.width  = width//window.innerWidth;
+    ctx3.canvas.height = height//window.innerHeight;
+
+    canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
+    canvas2.style.zIndex = -1
+
+    //https://www.quirksmode.org/dom/w3c_cssom.html 
+    //console.log(angles)
+    //console.log(slice)
+
+    var canvasLeft = canvas1.offsetLeft;
+    var canvasTop  = canvas1.offsetTop;
+    var count = 0
+    var drawX = width/2//520
+    var drawY = width/2 //520
+    
+    min = width
+    if(width > height){
+        drawY = height/2
+        min = height
+    }
+    
+    
+    cicleSize = Math.floor(min / 6)
+    directions = [2,3,4,5,0,1]
+    
+    //ctx1.fillStyle = 'black'
+    //ctx1.fillRect(drawX,drawY,100,100)
+    
+    posX = []
+    posY = []
+    posX.push(drawX)
+    posY.push(drawY)
+    for(var i = 0; i < 12; i++){
+            
+        for(var j = 0; j < i*6; j++){
+        
+        
+            ret = offset(drawX, drawY, directions[Math.floor(j / i)], cicleSize)
+            drawX = ret[0]
+            drawY = ret[1]
+            posX.push(drawX)
+            posY.push(drawY)
+           
+        }
+        
+        ret = offset(drawX, drawY, 6, cicleSize)
+        drawX = ret[0]
+        drawY = ret[1]
+    }
+    
+    //console.log(posX)
+    //console.log(posY)
+
 }
 var shift = 0
 var shift2 = 0
@@ -424,202 +434,165 @@ function drawLoop(){
 
     //console.log("drawstuff")
 
-    ctx1.clearRect(0,0,canvas1.width,canvas1.height)
-    ctx1.fillStyle='black'
-    ctx1.lineStyle='black'
+    if(update){
     
-    
+        ctx1.clearRect(0,0,canvas1.width,canvas1.height)
+        ctx1.fillStyle='black'
+        ctx1.lineStyle='black'
 
-    count = 0
-    drawX = 0
-    drawY = 0
-    
-    ctx1.fillStyle="#000000";
-    
-    var score = 0
-    for(var i = 0; i<values.length;i++){
-    
-        score += values[i]
-    
-    }
-    
-    ctx1.fillText("Score : "+ score.toString(), 850, 100) 
-    if(step >= steps){
-        slide = false
-        step  = 0
+        count = 0
+        drawX = 0
+        drawY = 0
         
-        //console.log("values")
-        //console.log(values)
-        //console.log("nextValues")
-        //console.log(nextValues)
         
-        values = nextValues.slice()
-    }
-    
-    if(slide){
-            //for(var i = 1; i < 19; i++){  //posX.length
-            //    hexagon(posX[i], posY[i], ctx1, 0)// + "|" + i.toString()) //values[i])
-            //}
+        if(step >= steps){
+            slide = false
+            update = false
+            step  = 0
+            values = nextValues.slice()
+
+            next = actionQueue.shift()
             
-            // var slideValue  = [] 
-            // var slideStartX = []
-            // var slideStartY = []
-            // var deltaX = []
-            // var deltaY = []
-            //var steps = 200
-            //var step  = 0
-            
-            for(var i = 0; i < slideValue.length; i++){
-            
-                if(slideValue[i] != -1){
-            
-                    hexagon(slideStartX[i] + deltaX[i] * step,
-                            slideStartY[i] + deltaY[i] * step,
-                            ctx1,
-                            slideValue[i])
-                        
-                }
+            if(next){
+                actionByKeyCode(next)
             }
             
-            step = step + 1 // I like this better than ++ now idk why. Like you can tell at a glance it's doing assignment
-    } else {
-        for(var i = 0; i < 19; i++){  //posX.length
-            if(values[i] != 0){
-                hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+            actionQueue = [] // maybe just queueing 1 is better
+            
+        }
+        
+        var score = 0
+        var zeros = 0
+        for(var i = 0; i<values.length;i++){
+        
+            var value = values[i]
+            score += value
+            if(value == 0){
+                zeros += 1 // zeros++ doesn't seem right with no semicolon
             }
         }
-   
-    }
+        
+        var gameOverBool = false
+        
+        if(zeros == 0){
+        
+            if(checkGameOver()){
+            
+                gameOverBool = true
+                gameOver()
+            }
+        }
+        
+        ctx1.fillStyle="#000000";
+        ctx1.fillText("Score : "+ score.toString(), 850, 100) 
+        
+        if(slide){
+                //for(var i = 1; i < 19; i++){  //posX.length
+                //    hexagon(posX[i], posY[i], ctx1, 0)// + "|" + i.toString()) //values[i])
+                //}
+                
+                // var slideValue  = [] 
+                // var slideStartX = []
+                // var slideStartY = []
+                // var deltaX = []
+                // var deltaY = []
+                //var steps = 200
+                //var step  = 0
+                
+                for(var i = 0; i < slideValue.length; i++){
+                
+                    if(slideValue[i] != -1){
+                
+                        hexagon(slideStartX[i] + deltaX[i] * step,
+                                slideStartY[i] + deltaY[i] * step,
+                                ctx1,
+                                slideValue[i])
+                            
+                    }
+                }
+                
+                step = step + 1 // I like this better than ++ now idk why. Like you can tell at a glance it's doing assignment
+        } else {
+            update = false
+            for(var i = 0; i < 19; i++){  //posX.length
+                if(values[i] != 0){
+                    hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+                }
+            }
+       
+        }
     
+    }
+
     window.requestAnimationFrame(drawLoop)
+    
 }
 
 
-/*
-function slideColOld(col, up){
-
-    var slide = false   // this one we return an allows us to keep track if anything slid at all
-
-    if(up){   // slide up
-        for(var i = 0; i < col.length; i++){
-        
-            var combine = false
-            var val = nextValues[col[i]]
-            
-            //console.log("col[I]:  " + col[i].toString())
-            //console.log("val:     " + val.toString())
-            
-            for(var j = i+1; j < (col.length); j++){
-                var compVal = nextValues[col[j]]
-                
-                //console.log("col[J]:  " +  col[j].toString())
-                //console.log("compVal: " +  compVal.toString())
-                if(compVal == 0){
-                    continue
-                }
-                else if(val == 0){  // swoop in for 0
-                    nextValues[col[i]] = compVal  
-                    nextValues[col[j]] = 0
-                    val = nextValues[col[i]]
-                    slide = true
-                    slides[col[j]] = col[i]
-                }
-                else if(val == compVal){
-                    if(mod(val,2) == 0){
-                        break       // break for two 6 terms
-                    }
-                    nextValues[col[i]] = val * 2  // combine matching 3 terms
-                    nextValues[col[j]] = 0
-                    val = nextValues[col[i]]
-                    slides[col[j]] = col[i]
-                    slide = true
-                    break // breaking here prevents more than two tiles from combining at once
-                          // removing this still works, but multiple tiles will combine ie (3 3 3 -> 9 instead of 3 3 3 - > 6 3)
-                } else if(val != compVal){
-                    if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
-                        nextValues[col[i]] = val + compVal  // combine matching 6 and 3 terms
-                        nextValues[col[j]] = 0
-                        val = nextValues[col[i]]
-                        slides[col[j]] = col[i]
-                        slide = true
-                        break  // same deal
-                    } else{
-                        break  // break for whatever else     
-                    }
-                }
-            }
-        }
-    } else {   // slide down
-        for(var i = col.length-1; i >= 0; i--){
-            var val = nextValues[col[i]]
-            
-            //console.log(i)
-            
-            //console.log("col[I]:  " + col[i].toString())
-            //console.log("val:     " + val.toString())
-            for(var j = i-1; j >= 0; j--){
-                var compVal = nextValues[col[j]]
-                
-                //console.log("col[J]:  " +  col[j].toString())
-                //console.log("compVal: " +  compVal.toString())
-                if(compVal == 0){
-                    continue
-                }
-                if(val == 0){  // swoop in for 0
-                    nextValues[col[i]] = compVal  
-                    nextValues[col[j]] = 0
-                    val = nextValues[col[i]]
-                    slides[col[j]] = col[i]
-                    slide = true
-                }
-                else if(val == compVal){
-                    if(mod(val,2) == 0){
-                        break       // break for two6 terms
-                    }
-                    nextValues[col[i]] = val * 2  // combine matching 3 terms
-                    nextValues[col[j]] = 0
-                    val = nextValues[col[i]]
-                    slides[col[j]] = col[i]
-                    slide = true
-                    break // breaking here prevents more than two tiles from combining at once
-                          // removing this still works, but multiple tiles will combine ie (3 3 3 -> 9 instead of 3 3 3 - > 6 3)
-                } else if(val != compVal){
-                    if(((val / compVal) == (2)) || ((val / compVal) == (1 / 2))){ 
-                        nextValues[col[i]] = val + compVal  // combine matching 6 and 3 terms
-                        nextValues[col[j]] = 0
-                        val = nextValues[col[i]]
-                        slides[col[j]] = col[i]
-                        slide = true
-                        break
-                    } else{
-                        break  // break for whatever else     
-                    }
-                }
-            }
-        }
-    }
+function checkGameOver(){
     
-    for (var i = 0; i < col.length; i++){
-        if(slides[col[i]] == 0 && nextValues[col[i]] != 0){
-            slides[col[i]] = col[i]  // put in identity slide (no slide) in slide array to make drawing tiles during animation easier
-        }
-    }
+    var slide = 0
+  
+    slide += checkCol(colR1)
+    slide += checkCol(colR2)
+    slide += checkCol(colR3)
+    slide += checkCol(colR4)
+    slide += checkCol(colR5)
+    slide += checkCol(colG1)
+    slide += checkCol(colG2)
+    slide += checkCol(colG3)
+    slide += checkCol(colG4)
+    slide += checkCol(colG5)
+    slide += checkCol(colB1)
+    slide += checkCol(colB2)
+    slide += checkCol(colB3)
+    slide += checkCol(colB4)
+    slide += checkCol(colB5)
+    
+    console.log("slide from checklose:" + slide.toString())
     
     if(slide){
-        return 1
+        return false
+    } else {
+        return true
     }
-    else {
-        return 0
-    }
-    
 }
-*/
 
 // jsperf.com javascript performance website
 
+function checkCol(col){
+
+    var check = 0
+    var count = 0
+    
+    var maxCount = 0
+    
+    for(var i = 0; i < col.length; i++){
+        var val = values[col[i]]
+        
+        if(val == check){
+            count += 1
+        } else {
+            count = 1
+            check = val
+        }
+        
+        if(count > maxCount){
+        
+            maxCount = count
+        
+        }
+        
+        if(count == 3){
+            return true
+        }
+    }
+    return false
+}
+
 function slideCol(col, up){
 
-    console.log('slide col')
+    //console.log('slide col')
 
     var slide = false   // this one we return an allows us to keep track if anything slid at all
 
@@ -627,15 +600,11 @@ function slideCol(col, up){
     var run      = 0
     
     if(! up){
-    
         col = col.slice().reverse()  // don't want to reverse original list
-    
     }
     
     var outCol        = []
-
     var slideStarts   = []
-    
     var targetMarker  = 0   // index of where slides target
    
     //console.log("col")
@@ -658,8 +627,6 @@ function slideCol(col, up){
             zeroGap = true
         
         } else {
-
-                console.log("targetMarker: " + col[targetMarker].toString()) 
         
             if(zeroGap){
             
@@ -669,8 +636,6 @@ function slideCol(col, up){
         
             if(value == runValue){
             
-
-
                 run = run + 1
                 
                 if(run == 2){
@@ -679,14 +644,12 @@ function slideCol(col, up){
                     slideStarts.push(col[i])
                     targetMarker = targetMarker + 1
                     outCol.push(value)
-                    
-                
                 }
                 
                 else if(run == 3){
                     slide = true
                 
-                    console.log("run of 3")
+                    //console.log("run of 3")
                     console.log(targetMarker)
                 
                     runValue = 0
@@ -701,8 +664,7 @@ function slideCol(col, up){
                     //slides[slideStarts[1]] = col[targetMarker]
                     
                     targetMarker = targetMarker + 1
-                    slideStarts = []
-                  
+                    slideStarts = []                  
                 }
             }
             
@@ -730,15 +692,6 @@ function slideCol(col, up){
         
     }
     
-    //console.log(outCol)
-
-    
-    //for (var i = 0; i < col.length; i++){
-    //    if(slides[col[i]] == 0 && nextValues[col[i]] != 0){
-    //        slides[col[i]] = col[i]  // put in identity slide (no slide) in slide array to make drawing tiles during animation easier
-    //    }
-    //}
-    
     if(slide){
         return 1
     }
@@ -750,7 +703,7 @@ function slideCol(col, up){
 
 function addRandom(){
 
-    console.log('adding random')
+    //console.log('adding random')
     var pickList = []
 
     for(var i = 0; i < values.length; i++){
@@ -779,19 +732,14 @@ function slideR(up){
     
     var a  = slideCol(colR1,up)
     var b  = slideCol(colR2,up)
-    var c1 = slideCol(colR3a,up)
-    //var c2 = slideCol(colR3b,up)
+    var c  = slideCol(colR3,up)
     var d  = slideCol(colR4,up)
     var e  = slideCol(colR5,up)
     
-    if(a+b+c1+d+e > 0){
+    if(a+b+c+d+e > 0){
         addRandom()
     }
-    
-    //console.log(values)
-    //console.log(nextValues)
-    //console.log(slides)
-    
+    update = true
     animate()
 }
 function slideG(up){
@@ -799,20 +747,17 @@ function slideG(up){
     nextValues = values.slice()
     slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
     
-    console.log(colG3a)
-    
     var a  = slideCol(colG1,up)
     var b  = slideCol(colG2,up)
-    var c1 = slideCol(colG3a,up)
-    //var c2 = slideCol(colG3b,up)
+    var c  = slideCol(colG3,up)
     var d  = slideCol(colG4,up)
     var e  = slideCol(colG5,up)
     
-    var sum = a+b+c1+d+e
+    var sum = a+b+c+d+e
     if(sum > 0){
         addRandom()
     }
-        console.log(sum)
+    update = true
     animate()
 }
 function slideB(up){
@@ -822,13 +767,13 @@ function slideB(up){
     
     var a  = slideCol(colB1,up)
     var b  = slideCol(colB2,up)
-    var c1 = slideCol(colB3a,up)
-    //var c2 = slideCol(colB3b,up)
+    var c  = slideCol(colB3,up)
     var d  = slideCol(colB4,up)
     var e  = slideCol(colB5,up)
-    if(a+b+c1+d+e > 0){
+    if(a+b+c+d+e > 0){
         addRandom()
     }
+    update = true
     animate()
 }
 
@@ -885,50 +830,6 @@ function drawUI(valid){
 // down right = 4
 // right      = 5
 
-function drawArrows(){
-
-    console.log("drawArrows")
-    
-    ctx2.clearRect(0,0,canvas2.width,canvas2.height);
-    
-    var UImidX = canvas2.width - 200
-    var UImidY =  200
-    
-    if( (leftArrow && rightArrow)  // all the invalid arrow combos
-        || (upArrow && downArrow)
-        || !(leftArrow || rightArrow)){   
-    
-        drawUI(false)
-    
-    } else {  // valid combo
-    
-        if(upArrow || downArrow){
-            if(leftArrow && downArrow){   // down left  = 3
-                arrow(UImidX, UImidY, ctx2, 3)
-                drawUI(true)
-            }
-            if(leftArrow && upArrow){    // up left    = 1
-                arrow(UImidX, UImidY, ctx2, 1)
-                drawUI(true)
-            }
-            if(rightArrow && downArrow){ // down right = 4
-                arrow(UImidX, UImidY, ctx2, 4)
-                drawUI(true)
-            }
-            if(rightArrow && upArrow){   // up right   = 0 
-                arrow(UImidX, UImidY, ctx2, 0)
-                drawUI(true)
-            }
-        } else if(leftArrow){            // left       = 2 
-            arrow(UImidX, UImidY, ctx2, 2)
-            drawUI(true)
-        } else if(rightArrow){           // right      = 5
-            arrow(UImidX, UImidY, ctx2, 5)
-            drawUI(true)
-        }
-    }
-
-}
 
 function animate(){
 
@@ -943,13 +844,7 @@ function animate(){
 
     for (var i = 0; i < slides.length; i++){
         if(slides[i] != -1){
-        
-            if(slides[i] == 0){
-            
-                console.log("slide to zero here")
-            
-            }
-        
+              
             slideStartX.push(posX[i])
             slideStartY.push(posY[i])
             
@@ -968,12 +863,6 @@ function animate(){
 
 }
 
-function keyPress(){
-
-    //drawArrows()
-    
-
-}
 
 // w = 87
 // e = 69
@@ -983,27 +872,16 @@ function keyPress(){
 // a = 65
 
 document.onkeydown = function(e) {
-    switch (e.keyCode) {
-        case 13:  // enter      : 13
-            enterKey   = true
-            enterPress()
-            break
-        case 37: // left  arrow: 37
-            leftArrow  = true
-            keyPress()
-            break 
-        case 38: // up    arrow: 38
-            upArrow    = true
-            keyPress()
-            break
-        case 39:  // right arrow: 39
-            rightArrow = true
-            keyPress()
-            break
-        case 40:  // down  arrow: 40
-            downArrow  = true
-            keyPress()
-            break
+    if(! update){
+        actionByKeyCode(e.keyCode)
+    }
+    else{
+        actionQueue.push(e.keyCode)
+    }
+}
+
+function actionByKeyCode(code){
+    switch (code) {
         case 87: // w
             slideB(false)
             break
@@ -1023,32 +901,6 @@ document.onkeydown = function(e) {
             slideG(false)
             break
     }
-}
-
-document.onkeyup = function(e) {
-    switch (e.keyCode) {
-        case 13:  // enter      : 13
-            enterKey   = false
-            enterPress()
-            break
-        case 37: // left  arrow: 37
-            leftArrow  = false
-            keyPress()
-            break 
-        case 38: // up    arrow: 38
-            upArrow    = false
-            keyPress()
-            break
-        case 39:  // right arrow: 39
-            rightArrow = false
-            keyPress()
-            break
-        case 40:  // down  arrow: 40
-            downArrow  = false
-            keyPress()
-            break
-    }
-    
 }
 
 
@@ -1083,34 +935,34 @@ function handleTouchMove(evt) {
     
     //ctx1.fillText(rad, 500,500)
     
-    console.log(rad)
+    //console.log(rad)
     
     if(rad > (1/6) && rad <= (3/6)){
-    console.log('e , rad > 1/6 && rad <= 3/6, rad: ' + rad.toString())
+    //console.log('e , rad > 1/6 && rad <= 3/6, rad: ' + rad.toString())
     // e
     slideB(true)
     }
     else if(rad > (1/2) && rad <= (5/6)){
-    console.log('w , rad > 1/2 && rad <= 5/6, rad: ' + rad.toString())
+    //console.log('w , rad > 1/2 && rad <= 5/6, rad: ' + rad.toString())
     // w
     slideR(false)
     }
     else if(rad > (5/6) && rad <= (7/6)){
-    console.log('a , rad > 5/6 && rad <= 7/6, rad: ' + rad.toString())
+    //console.log('a , rad > 5/6 && rad <= 7/6, rad: ' + rad.toString())
     // a
      slideG(false)
     }
     else if(rad > (7/6) && rad <= (9/6)){
-    console.log('z , rad > 7/6 && rad <= 9/6, rad: ' + rad.toString())
+    //console.log('z , rad > 7/6 && rad <= 9/6, rad: ' + rad.toString())
     // z
     slideB(false)
     }
     else if(rad > (9/6) && rad <= (11/6)){
-    console.log('x , rad > 9/6 && rad <= 11/6, rad: ' + rad.toString())
+    //console.log('x , rad > 9/6 && rad <= 11/6, rad: ' + rad.toString())
     //  x
     slideR(true)
     }else{
-    console.log('d , other rad,                rad: ' + rad.toString())
+    //console.log('d , other rad,                rad: ' + rad.toString())
     // d
     slideG(true)
     }
@@ -1121,6 +973,7 @@ function handleTouchMove(evt) {
 
 //console.log(canvas1)
 
+initCanvas()
 
 for(var i = 0; i < 19; i++){  //posX.length
    
@@ -1137,10 +990,9 @@ addRandom()
 //nextValues[8] = 4
 
 values = nextValues.slice()
+update = true
 drawLoop()
 //console.log(values)
 
-console.log(canvas1.position)
-console.log(canvas2.position)
 
 </script>
