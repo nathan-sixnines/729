@@ -222,71 +222,6 @@ function hexagon(x, y, ctx, value){
 
 }
 
-function hexagonOld(x, y, ctx, value){
-   
-    var fill = false
-    
-    if(value != 0){
-        fill = true
-    }
-    
-    //console.log(fill)
-    
-
-    var fillG = 0
-    var fillR = 0
-    if(value % 6 == 0){
-        fillR = mod(value * 50,255)
-    } else {
-    
-        fillG = mod(value * 51,255)
-    }
-
-    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
-   
-    //console.log(fillB)
-   
-    ctx.beginPath()
-    var first = true
-    var firstX = null
-    var firstY = null
-    for(var h = 0; h < 6; h++){
-        ret = offset2(x, y, directions[h] , 100)
-        var hexX1 = ret[0]
-        var hexY1 = ret[1]
-        arcRets.push(towards(hexX1,hexY1,x,y,radius))
-        if(first){
-            ctx.moveTo(hexX, hexY)
-            first = false
-            firstX = hexX
-            firstY = hexY
-        }
-        else{
-            ctx.lineTo(hexX, hexY)
-        }
-    }
-    
-    var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
-    
-    //console.log(value)
-    //console.log(colorString)
-    
-    ctx.lineTo(firstX, firstY)
-    ctx.closePath()
-    ctx.lineWidth=1;
-    if(fill){
-        ctx.lineWidth=5;
-        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-        //console.log(ctx.fillStyle)
-        ctx.fill()
-        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
-        ctx.font="50px Georgia";
-        ctx.fillText(value.toString(), x- 15, y)
-        ctx.fillStyle = "#000000"
-   }
-   ctx.stroke()
-}
-
 function towards(x1,y1,x2,y2,distance){
 
     var diffX = x2 - x1
@@ -343,7 +278,7 @@ if( window.innerWidth < screen.width){
 
 var min = width
 
-var cicleSize = width / 6
+var cicleSize = width / 5
 var directions = [2,3,4,5,0,1]
 var posX = []
 var posY = []
@@ -396,7 +331,7 @@ function initCanvas(){
     }
     
     
-    cicleSize = Math.floor(min / 6)
+    cicleSize = Math.floor(min / 5)
     directions = [2,3,4,5,0,1]
     
     //ctx1.fillStyle = 'black'
