@@ -1,13 +1,19 @@
+<title>729</title>
+
 <div id="container">
 <canvas id="tileCanvas"></canvas>
 <canvas id="bgtileCanvas"></canvas>
 <canvas id="arrowCanvas"></canvas>
 </div>
+<div id="title">
+<h1>729</h1>
+</div>
+
+
 
 <style>
 
 body { 
-
     overscroll-behavior: contain;
 
        margin: 0; 
@@ -40,6 +46,17 @@ body {
      height: 100%; 
      overflow: hidden
    }
+#title {
+    position: absolute;
+    top: 0%;
+    left: 0;
+    right: 0;
+    margin: auto;
+    font-size: 70;
+    display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}
 </style>
 
 <script>
@@ -322,11 +339,11 @@ function initCanvas(){
     var canvasTop  = canvas1.offsetTop;
     var count = 0
     var drawX = width/2//520
-    var drawY = width/2 //520
+    var drawY = height*2/5  //520
     
     min = width
     if(width > height){
-        drawY = height/2
+        //drawY = height/2
         min = height
     }
     
