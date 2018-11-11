@@ -9,12 +9,24 @@
 <h1>729</h1>
 </div>
 <div id ="instructions">
-<p>Line up three matching numbers and swipe them together. Get a 729 tile to win.</p>
+<p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
+</div>
+<div id ="gameOver">
+    <div id ="inner1">
+        <p>Game over! Your score is 0.</p>
+    </div>
+<button onclick="newGame()" class="button">New Game</button>
+</div>
+
+<div id ="youWin">
+    <div id ="inner2">
+        <p">You won! Your score is 0.</p>
+    </div>
+<button onclick="continueGame()" class="contButton">Continue</button>
 </div>
 
 <link rel="stylesheet" href="fonts/stylesheet1.css" type="text/css" charset="utf-8" />
 <link rel="stylesheet" href="fonts/kit2/stylesheet.css" type="text/css" charset="utf-8" />
-
 
 <style>
 
@@ -68,8 +80,9 @@ body {
     text-align: center;
 }
 #instructions {
+
     position: absolute;
-    top: 70%;
+    top: 67%;
     left: 0;
     right: 0;
     margin: auto;
@@ -77,6 +90,67 @@ body {
     display: inline-block;
     vertical-align: middle;
     text-align: center;
+}
+#gameOver {
+
+    border-radius: 25px;
+    border: 4px solid #000000;
+    padding: 20px;
+    
+    display: none; 
+    
+    background-color:white;
+    position: absolute;
+    top: 40%;
+    left: 0;
+    right: 0;
+    margin: auto;
+    font-size: 40;
+    //display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}
+
+#youWin {
+
+    border-radius: 25px;
+    border: 4px solid #000000;
+    padding: 20px;
+    
+    display: none; 
+    
+    background-color:white;
+    position: absolute;
+    top: 40%;
+    left: 0;
+    right: 0;
+    margin: auto;
+    font-size: 40;
+    //display: inline-block;
+    vertical-align: middle;
+    text-align: center;
+}
+.button {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: 'nothing_you_could_sayregular';
+    font-size: 40px;
+}
+.contButton {
+    background-color: #4CAF50; /* Green */
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-family: 'nothing_you_could_sayregular';
+    font-size: 40px;
 }
 </style>
 
@@ -123,12 +197,8 @@ var values     = new Array(19).fill(0)
 var nextValues = new Array(19).fill(0)
 var slides     = new Array(19).fill(0)
 
-var leftArrow  = false
-var upArrow    = false
-var rightArrow = false
-var downArrow  = false
-
-var enterKey   = false
+var prompt = false
+var won    = false
 
 var slideValue  = []
 var slide       = false
@@ -146,7 +216,186 @@ var deltaY = []
 var steps = 30
 var step  = 0
 
+// ctx is the context to add the path to
+// points is a array of points [{x :?, y: ?},...
+// radius is the max rounding radius 
+// this creates a closed polygon.
+// To draw you must call between 
+//    ctx.beginPath();
+//    roundedPoly(ctx, points, radius);
+//    ctx.stroke();
+//    ctx.fill();
+// as it only adds a path and does not render. 
+function roundedPoly(ctx, points, radiusAll) {
+  var i, x, y, len, p1, p2, p3, v1, v2, sinA, sinA90, radDirection, drawDirection, angle, halfAngle, cRadius, lenOut,radius;
+  // convert 2 points into vector form, polar form, and normalised 
+  var asVec = function(p, pp, v) {
+    v.x = pp.x - p.x;
+    v.y = pp.y - p.y;
+    v.len = Math.sqrt(v.x * v.x + v.y * v.y);
+    v.nx = v.x / v.len;
+    v.ny = v.y / v.len;
+    v.ang = Math.atan2(v.ny, v.nx);
+  }
+  radius = radiusAll;
+  v1 = {};
+  v2 = {};
+  len = points.length;
+  p1 = points[len - 1];
+  // for each point
+  for (i = 0; i < len; i++) {
+    p2 = points[(i) % len];
+    p3 = points[(i + 1) % len];
+    //-----------------------------------------
+    // Part 1
+    asVec(p2, p1, v1);
+    asVec(p2, p3, v2);
+    sinA = v1.nx * v2.ny - v1.ny * v2.nx;
+    sinA90 = v1.nx * v2.nx - v1.ny * -v2.ny;
+    angle = Math.asin(sinA);
+    //-----------------------------------------
+    radDirection = 1;
+    drawDirection = false;
+    if (sinA90 < 0) {
+      if (angle < 0) {
+        angle = Math.PI + angle;
+      } else {
+        angle = Math.PI - angle;
+        radDirection = -1;
+        drawDirection = true;
+      }
+    } else {
+      if (angle > 0) {
+        radDirection = -1;
+        drawDirection = true;
+      }
+    }
+    if(p2.radius !== undefined){
+        radius = p2.radius;
+    }else{
+        radius = radiusAll;
+    }
+    //-----------------------------------------
+    // Part 2
+    halfAngle = angle / 2;
+    //-----------------------------------------
+
+    //-----------------------------------------
+    // Part 3
+    lenOut = Math.abs(Math.cos(halfAngle) * radius / Math.sin(halfAngle));
+    //-----------------------------------------
+
+    //-----------------------------------------
+    // Special part A
+    if (lenOut > Math.min(v1.len / 2, v2.len / 2)) {
+      lenOut = Math.min(v1.len / 2, v2.len / 2);
+      cRadius = Math.abs(lenOut * Math.sin(halfAngle) / Math.cos(halfAngle));
+    } else {
+      cRadius = radius;
+    }
+    //-----------------------------------------
+    // Part 4
+    x = p2.x + v2.nx * lenOut;
+    y = p2.y + v2.ny * lenOut;
+    //-----------------------------------------
+    // Part 5
+    x += -v2.ny * cRadius * radDirection;
+    y += v2.nx * cRadius * radDirection;
+    //-----------------------------------------
+    // Part 6
+    ctx.arc(x, y, cRadius, v1.ang + Math.PI / 2 * radDirection, v2.ang - Math.PI / 2 * radDirection, drawDirection);
+    //-----------------------------------------
+    p1 = p2;
+    p2 = p3;
+  }
+  ctx.closePath();
+}
+
 function hexagon(x, y, ctx, value){
+   
+    var fill = false
+    var fillG = 0
+    var fillR = 0
+    if(value % 6 == 0){
+        fillR = mod(value * 50,255)
+    } else {
+    
+        fillG = mod(value * 51,255)
+    }
+
+    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
+   
+    if(value != 0){
+        fill = true
+        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+    }else {
+        ctx.fillStyle = "rgba(245,245,220, 1)";
+    }
+   
+    ret = offset2(x, y, 0 , circleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+
+    var points = []
+    
+    //points.push({x: ret[0],y: ret[1]})
+    
+    //points.push
+ 
+    for(var h = 0; h < 6; h++){
+        
+        ret = offset2(cornerX, cornerY, directions[h] , circleSize/2)
+        cornerX = ret[0]
+        cornerY = ret[1]
+        
+        points.push({x: ret[0],y: ret[1]})
+        //ctx.fillText("cu"+h,curveX1 , curveY1)
+        //ctx.fillText("co"+h,cornerX , cornerY)
+    }
+    
+    //ctx.fillStyle = 'black'
+    
+    //console.log(points)
+    
+    ctx.strokeStyle = 'black'
+    
+    ctx.lineWidth = 3
+    
+    if(value != 0){
+        ctx.lineWidth += 4
+    }
+    
+    ctx.beginPath()
+    
+    
+    
+    roundedPoly(ctx, points, circleSize/8)
+
+    ctx.fill()
+    
+    //if(value != 0){
+    ctx.stroke()
+    //}
+
+    
+    if(mod(value,2) == 0 && value != 0){
+        ctx.fillStyle = "#000000"
+    }
+    
+    if(fill){
+        var digits = value.toString().length
+    
+        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        
+        //https://stackoverflow.com/questions/13771310/center-proportional-font-text-in-an-html5-canvas
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = "center";
+        ctx.fillText(value.toString(), x , y )
+    }
+   //ctx.stroke()
+}
+
+function hexagonOld(x, y, ctx, value){
    
     var fill = false
     
@@ -180,13 +429,13 @@ function hexagon(x, y, ctx, value){
     // this is more complicated now because of curved corners
     // if you want to see how the basic version works look at the old function
    
-    var radius = cicleSize/20 
+    var radius = circleSize /10
    
     ctx.beginPath()
-    ret = offset2(x, y, 0 , cicleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
+    ret = offset2(x, y, 0 , circleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
     var cornerX = ret[0]
     var cornerY = ret[1]
-    ret = offset2(cornerX, cornerY, 4 , cicleSize/20)
+    ret = offset2(cornerX, cornerY, 4 , circleSize/10)
     var curveX1 = ret[0]
     var curveY1 = ret[1]
     //ctx.fillText("cu1",curveX1 , curveY1)
@@ -197,7 +446,7 @@ function hexagon(x, y, ctx, value){
     ctx.moveTo(curveX1, curveY1)
     for(var h = 0; h < 6; h++){
         
-        ret = offset2(cornerX, cornerY, directions[h] , cicleSize/20)
+        ret = offset2(cornerX, cornerY, directions[h] , circleSize/10)
         curveX2 = ret[0]
         curveY2 = ret[1]
         //ctx.fillText("cu"+h,curveX2 , curveY2)
@@ -206,11 +455,11 @@ function hexagon(x, y, ctx, value){
         
         arcRets.push(towards(cornerX,cornerY,x,y,radius+2))
        
-        ret = offset2(cornerX, cornerY, directions[h] , cicleSize*9/20)
+        ret = offset2(cornerX, cornerY, directions[h] , circleSize*4/10)
         curveX1 = ret[0]
         curveY1 = ret[1]
         ctx.lineTo(curveX1,curveY1)
-        ret = offset2(cornerX, cornerY, directions[h] , cicleSize/2)
+        ret = offset2(cornerX, cornerY, directions[h] , circleSize/2)
         cornerX = ret[0]
         cornerY = ret[1]
         //ctx.fillText("cu"+h,curveX1 , curveY1)
@@ -219,14 +468,14 @@ function hexagon(x, y, ctx, value){
     
     var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
     
-    ret = offset2(cornerX, cornerY, directions[h] , cicleSize/20)
+    ret = offset2(cornerX, cornerY, directions[h] , circleSize/20)
     curveX2 = ret[0]
     curveY2 = ret[1]
     
     //ctx.quadraticCurveTo(cornerX,cornerY, curveX2,curveY2)
     ctx.closePath()
     
-    
+
     //console.log(ctx.fillStyle)
     ctx.fill()
     
@@ -254,8 +503,6 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
-   
-
 }
 
 function towards(x1,y1,x2,y2,distance){
@@ -291,6 +538,8 @@ function offsetExact(x, y, angle, factor){
     return [retX,retY]
 }
 
+var score = 0
+
 var canvas1 = document.getElementById("tileCanvas");
 var ctx1    = canvas1.getContext("2d");
 var canvas2 = document.getElementById("bgtileCanvas");
@@ -302,6 +551,7 @@ var ctx3    = canvas3.getContext("2d");
 var height = null
 var width  = null
 
+/*
 if( window.innerHeight < screen.height){
     height = window.innerHeight
 } else {
@@ -311,16 +561,16 @@ if( window.innerWidth < screen.width){
     width = window.innerWidth
 } else {
     width = screen.width
-}
+}*/
 
 var min = width
 
-var cicleSize = width / 5
+var circleSize = width / 5
 var directions = [2,3,4,5,0,1]
 var posX = []
 var posY = []
 
-var fontSize = cicleSize/2.5
+var fontSize = circleSize/2.5
 
 ctx1.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 ctx2.font= fontSize.toString() + 'px nothing_you_could_sayregular';
@@ -335,24 +585,24 @@ function initCanvas(){
     canvas3 = document.getElementById("arrowCanvas");
     ctx3    = canvas3.getContext("2d");
 
-    if( window.innerHeight < screen.height){
-        height = window.innerHeight
-    } else {
-        height = screen.height
-    }
-    if( window.innerWidth < screen.width){
-        width = window.innerWidth
-    } else {
-        width = screen.width
-    }
+    //if( window.innerHeight < screen.height){
+    height = window.innerHeight
+    //} else {
+    //    height = screen.height
+    //}
+    //if( window.innerWidth < screen.width){
+    width = window.innerWidth
+    //} else {
+    //    width = screen.width
+    //}
     
 
-    ctx1.canvas.width  = width//window.innerWidth;
-    ctx1.canvas.height = height//window.innerHeight;
-    ctx2.canvas.width  = width//window.innerWidth;
-    ctx2.canvas.height = height//window.innerHeight;
-    ctx3.canvas.width  = width//window.innerWidth;
-    ctx3.canvas.height = height//window.innerHeight;
+    ctx1.canvas.width  = window.innerWidth; //width//
+    ctx1.canvas.height = window.innerHeight; //height//
+    ctx2.canvas.width  = window.innerWidth; // width//
+    ctx2.canvas.height = window.innerHeight; // height//
+    ctx3.canvas.width  = window.innerWidth;  // width//
+    ctx3.canvas.height = window.innerHeight; // height//
 
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
@@ -374,10 +624,10 @@ function initCanvas(){
     }
     
     
-    cicleSize = Math.floor(min / 5)
+    circleSize = Math.floor(min / 5)
     directions = [2,3,4,5,0,1]
     
-    fontSize = cicleSize/2.5
+    fontSize = circleSize/2.5
 
 ctx1.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 ctx2.font= fontSize.toString() + 'px nothing_you_could_sayregular';
@@ -395,7 +645,7 @@ ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
         for(var j = 0; j < i*6; j++){
         
         
-            ret = offset(drawX, drawY, directions[Math.floor(j / i)], cicleSize)
+            ret = offset(drawX, drawY, directions[Math.floor(j / i)], circleSize)
             drawX = ret[0]
             drawY = ret[1]
             posX.push(drawX)
@@ -403,7 +653,7 @@ ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
            
         }
         
-        ret = offset(drawX, drawY, 6, cicleSize)
+        ret = offset(drawX, drawY, 6, circleSize)
         drawX = ret[0]
         drawY = ret[1]
     }
@@ -445,7 +695,8 @@ function drawLoop(){
             
         }
         
-        var score = 0
+        var winBool = false
+        
         var zeros = 0
         for(var i = 0; i<values.length;i++){
         
@@ -454,6 +705,16 @@ function drawLoop(){
             if(value == 0){
                 zeros += 1 // zeros++ doesn't seem right with no semicolon
             }
+            if(value == 729 && won == false){
+                winBool = true
+            }
+        }
+        
+        if(winBool){
+            first  = false   // this won't ever matter in practice but helps development
+            prompt = true
+            update = false
+            youWin()
         }
         
         var gameOverBool = false
@@ -462,7 +723,9 @@ function drawLoop(){
         
             if(checkGameOver()){
             
-                gameOverBool = true
+                first  = false   // this won't ever matter in practice but helps development
+                prompt = true
+                update = false
                 gameOver()
             }
         }
@@ -533,13 +796,59 @@ function checkGameOver(){
     slide += checkCol(colB4)
     slide += checkCol(colB5)
     
-    console.log("slide from checklose:" + slide.toString())
+    //console.log("slide from checklose:" + slide.toString())
     
     if(slide){
         return false
     } else {
         return true
     }
+}
+
+function youWin(){
+
+    won = true
+    var winDiv = document.getElementById("youWin");
+    var innerDiv = document.getElementById("inner1");
+    inner1.innerText =" You Won! Your score is "+ score.toString() + "."
+    winDiv.style.display = 'inline-block'
+    
+}
+
+function continueGame(){
+
+    var winDiv = document.getElementById("youWin");
+    winDiv.style.display = 'none'
+    prompt = false
+
+}
+
+function gameOver(){
+
+    var overDiv = document.getElementById("gameOver");
+    var innerDiv = document.getElementById("inner1");
+    innerDiv.innerText ="Game over! Your score is "+ score.toString() + "."
+    overDiv.style.display = 'inline-block'
+
+}
+
+function newGame(){
+
+    nextValues.fill(0)
+    
+    score = 0
+    
+    addRandom()
+    addRandom()
+    
+    values = nextValues.slice()
+    
+    prompt = false
+    update = true
+    
+    var overDiv = document.getElementById("gameOver");
+    overDiv.style.display = 'none'
+
 }
 
 // jsperf.com javascript performance website
@@ -682,7 +991,6 @@ function slideCol(col, up){
     else {
         return 0
     }
-    
 }
 
 function addRandom(){
@@ -695,9 +1003,7 @@ function addRandom(){
             pickList.push(i)
         }
     }
-    
-    
-    
+
     var pick = pickList[Math.floor(Math.random()*pickList.length)];
     
     if(Math.random() > 5/9){
@@ -710,58 +1016,61 @@ function addRandom(){
 }
 
 function slideR(up){
-
-    nextValues = values.slice()
-    slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
-    
-    var a  = slideCol(colR1,up)
-    var b  = slideCol(colR2,up)
-    var c  = slideCol(colR3,up)
-    var d  = slideCol(colR4,up)
-    var e  = slideCol(colR5,up)
-    
-    if(a+b+c+d+e > 0){
-        addRandom()
+    if(!prompt){
+        nextValues = values.slice()
+        slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
+        
+        var a  = slideCol(colR1,up)
+        var b  = slideCol(colR2,up)
+        var c  = slideCol(colR3,up)
+        var d  = slideCol(colR4,up)
+        var e  = slideCol(colR5,up)
+        
+        if(a+b+c+d+e > 0){
+            addRandom()
+        }
+        update = true
+        first = false  
+        animate()
     }
-    update = true
-    first = false  
-    animate()
 }
 function slideG(up){
-
-    nextValues = values.slice()
-    slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
-    
-    var a  = slideCol(colG1,up)
-    var b  = slideCol(colG2,up)
-    var c  = slideCol(colG3,up)
-    var d  = slideCol(colG4,up)
-    var e  = slideCol(colG5,up)
-    
-    var sum = a+b+c+d+e
-    if(sum > 0){
-        addRandom()
+    if(!prompt){
+        nextValues = values.slice()
+        slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
+        
+        var a  = slideCol(colG1,up)
+        var b  = slideCol(colG2,up)
+        var c  = slideCol(colG3,up)
+        var d  = slideCol(colG4,up)
+        var e  = slideCol(colG5,up)
+        
+        var sum = a+b+c+d+e
+        if(sum > 0){
+            addRandom()
+        }
+        update = true
+        first = false
+        animate()
     }
-    update = true
-    first = false
-    animate()
 }
 function slideB(up){
-
-    nextValues = values.slice()
-    slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
-    
-    var a  = slideCol(colB1,up)
-    var b  = slideCol(colB2,up)
-    var c  = slideCol(colB3,up)
-    var d  = slideCol(colB4,up)
-    var e  = slideCol(colB5,up)
-    if(a+b+c+d+e > 0){
-        addRandom()
+    if(!prompt){
+        nextValues = values.slice()
+        slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
+        
+        var a  = slideCol(colB1,up)
+        var b  = slideCol(colB2,up)
+        var c  = slideCol(colB3,up)
+        var d  = slideCol(colB4,up)
+        var e  = slideCol(colB5,up)
+        if(a+b+c+d+e > 0){
+            addRandom()
+        }
+        update = true
+        first = false
+        animate()
     }
-    update = true
-    first = false
-    animate()
 }
 
 function drawUI(valid){
