@@ -117,7 +117,7 @@ body {
     vertical-align: middle;
     text-align: center;
 }
-#instructions {
+#instructions {  
 
     position: absolute;
     top: 79%;
@@ -129,7 +129,7 @@ body {
     vertical-align: middle;
     text-align: center;
 }
-#gameOver {
+#gameOver { 
 
     border-radius: 2.5vw;
     border: .5vw solid #000000;
@@ -149,7 +149,7 @@ body {
     text-align: center;
 }
 
-#youWin {
+#youWin { 
 
     border-radius: 2.5vw;
     border: .5vw solid #000000;
@@ -168,7 +168,12 @@ body {
     vertical-align: middle;
     text-align: center;
 }
-.button {
+.button {  
+
+    border-radius: 1.25vw;
+    border: .5vw solid #000000;
+    padding: 2vw 4vw;
+    
     background-color: #4CAF50; /* Green */
     border: none;
     color: white;
@@ -179,7 +184,7 @@ body {
     font-family: 'nothing_you_could_sayregular';
     font-size: 4vw;
 }
-.button2 {
+.button2 {  
     border-radius: 2.5vw;
     border: .5vw solid #000000;
     padding: 2vw 4vw;
@@ -199,7 +204,12 @@ body {
     vertical-align: middle;
     text-align: right;
 }
-.contButton {
+.contButton {  
+
+    border-radius: 1.25vw;
+    border: .5vw solid #000000;
+    padding: 2vw 4vw;
+    
     background-color: #4CAF50; /* Green */
     border: none;
     color: white;
@@ -210,7 +220,7 @@ body {
     font-family: 'nothing_you_could_sayregular';
     font-size: 4vw;
 }
-#score {
+#score {  
 
     border-radius: 2.5vw;
     border: .5vw solid #000000;
@@ -230,7 +240,7 @@ body {
     text-align: left;
    
 }
-#reset {
+#reset {   // I don't think this element actually exists try to remove later one thing at a time for now
 
     border-radius: 2.5vw;
     border: .5vw solid #000000;
@@ -238,7 +248,7 @@ body {
     
     display: inline-block; 
     
-    background-color: white; //#4CAF50; /* Green */
+    background-color: black; //#4CAF50; /* Green */
     position: absolute;
     top: 71%;
     left: 52%;
@@ -691,6 +701,9 @@ ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 var scoreDiv = document.getElementById("score");
 scoreDiv.innerText ="Score: " + score.toString()
 
+
+console.log('sanity check')
+
 function initCanvas(){
 
     canvas1 = document.getElementById("tileCanvas");
@@ -719,7 +732,6 @@ function initCanvas(){
         height = window.innerHeight *.9
         width = window.innerWidth
 
-
         ctx1.canvas.width  = window.innerWidth  ; //width//
         ctx1.canvas.height = window.innerHeight *.9; //height//
         ctx2.canvas.width  = window.innerWidth  ; // width//
@@ -729,6 +741,8 @@ function initCanvas(){
     
     }
     
+        console.log(height)
+        console.log(width)
     
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
@@ -744,8 +758,53 @@ function initCanvas(){
     
     min = width
     if(width > height){
-        //drawY = height/2
-        min = height
+    
+        ratio = (width / height) * 2 // seems about right
+        // elements that need font prop change
+        // #reset {  #score {  .contButton {  .button2 {  .button {   #youWin {  #gameOver {   #instructions {  #title
+        min = width / ratio
+        
+        var resizes = []
+        
+        //resizes.push(document.getElementById('reset'))
+        resizes.push(document.getElementById('score'))
+        resizes.push(document.getElementsByClassName("contButton")[0])
+        resizes.push(document.getElementsByClassName('button2')[0])
+        resizes.push(document.getElementsByClassName('button')[0])
+        resizes.push(document.getElementById('youWin'))
+        resizes.push(document.getElementById('gameOver'))
+        resizes.push(document.getElementById('instructions'))
+        resizes.push(document.getElementById('title'))
+        
+        console.log(resizes)
+        
+        for(var i = 0; i < resizes.length; i++){
+        
+            oldSize = parseFloat(getComputedStyle(resizes[i])['font-size'])
+            resizes[i].style.fontSize  = (oldSize / ratio).toString() + 'px'
+            console.log(getComputedStyle(resizes[i]))
+            
+        }
+        
+        // this is all janky but idk the better way to do it yet
+        
+        var scoreStyle    = resizes[0].style
+        var restartStyle  = resizes[2].style
+        var instructions  = resizes[6].style
+        
+        scoreStyle.position   = 'absolute'
+        restartStyle.position = 'absolute'
+        instructions.position = 'absolute'
+        
+        scoreStyle.left     = '20%'
+        restartStyle.right  = '20%'
+        
+        scoreStyle.top     = '63%'
+        restartStyle.top   = '63%'
+        
+        instructions.top = '80%'
+        
+
     }
     
     if(isSafari){
