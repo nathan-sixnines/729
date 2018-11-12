@@ -1314,7 +1314,7 @@ document.addEventListener('touchstart', handleTouchStart, false);
 
 document.addEventListener('touchmove', function(evt) {
     // I hate safari
-    var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification));
+    var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
     if (isSafari){
         evt.preventDefault();
     }
