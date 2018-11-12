@@ -20,9 +20,9 @@
 
 <div id ="youWin">
     <div id ="inner2">
-        <p">You won! Your score is 0.</p>
+        <p">You won!</p>
     </div>
-<button onclick="continueGame()" class="contButton">Continue</button>
+<button onclick="continueGame()" class="contButton">Continue?</button>
 </div>
 
 <div id ="score">
@@ -44,16 +44,18 @@
 } 
 
 html {
-    height  : 100%;
-    overflow: hidden;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
 }
 
 body { 
 
-    //position: fixed;
-    height  : 100% -1px;
-    overflow: hidden;
-	//font-family: 'just_another_handregular';
+  height: 100%;
+  padding: 0;
+  overflow: auto;
+  margin: 0;
+  -webkit-overflow-scrolling: touch;
 	font-family: 'nothing_you_could_sayregular';					
 
     overscroll-behavior: contain;
@@ -146,8 +148,8 @@ body {
     background-color:white;
     position: absolute;
     top: 40%;
-    left: 0;
-    right: 0;
+    left: 20%;
+    right: 20%;
     margin: auto;
     font-size: 4vw;
     //display: inline-block;
@@ -189,12 +191,12 @@ body {
     background-color: #4CAF50; /* Green */
     border: none;
     color: white;
-    padding: .15vw .32vw;
+    padding: 2vw;
     text-align: center;
     text-decoration: none;
     display: inline-block;
     font-family: 'nothing_you_could_sayregular';
-    font-size: 4px;
+    font-size: 4vw;
 }
 #score {
 
@@ -279,6 +281,7 @@ var colList = []  // ugh i don't want all all that to a list manually
 var values     = new Array(19).fill(0)
 var nextValues = new Array(19).fill(0)
 var slides     = new Array(19).fill(0)
+var pops       = new Array(19).fill(0)
 
 var prompt = false
 var won    = false
@@ -854,7 +857,7 @@ function drawLoop(){
                     }
                 }
                 
-                step = step + 1 // I like this better than ++ now idk why. Like you can tell at a glance it's doing assignment
+                step = step + 1 // I like this better than ++ now. You can tell at a glance it's doing assignment
         } else {
             update = false
             for(var i = 0; i < 19; i++){  //posX.length
@@ -906,7 +909,7 @@ function youWin(){
     won = true
     var winDiv = document.getElementById("youWin");
     var innerDiv = document.getElementById("inner1");
-    inner1.innerText =" You Won! Your score is "+ score.toString() + "."
+    inner1.innerText =" You Won!"
     winDiv.style.display = 'inline-block'
     
 }
@@ -1043,6 +1046,7 @@ function slideCol(col, up){
                     slides[col[i]]    = col[targetMarker]
                     slides[slideStarts[0]] = col[targetMarker]
                     //slides[slideStarts[1]] = col[targetMarker]
+                    pops[col[targetMarker]] = 1
                     
                     targetMarker = targetMarker + 1
                     slideStarts = []                  
@@ -1111,6 +1115,7 @@ function slideR(up){
     if(!prompt){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
+        pops   = new Array(19).fill(0)
         
         var a  = slideCol(colR1,up)
         var b  = slideCol(colR2,up)
@@ -1130,6 +1135,7 @@ function slideG(up){
     if(!prompt){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
+        pops   = new Array(19).fill(0)
         
         var a  = slideCol(colG1,up)
         var b  = slideCol(colG2,up)
@@ -1150,6 +1156,7 @@ function slideB(up){
     if(!prompt){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
+        pops   = new Array(19).fill(0)
         
         var a  = slideCol(colB1,up)
         var b  = slideCol(colB2,up)
