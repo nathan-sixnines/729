@@ -688,7 +688,7 @@ function initCanvas(){
     ctx3    = canvas3.getContext("2d");
 
     //if( window.innerHeight < screen.height){
-    height = screen.height//window.innerHeight
+    height = screen.height *.9//window.innerHeight
     //} else {
     //    height = screen.height
     //}
@@ -700,11 +700,11 @@ function initCanvas(){
     
 
     ctx1.canvas.width  = screen.width//window.innerWidth  -1; //width//
-    ctx1.canvas.height = screen.height//window.innerHeight -1; //height//
-    ctx2.canvas.width  = screen.width//window.innerWidth  -1; // width//
-    ctx2.canvas.height = screen.height//window.innerHeight -1; // height//
+    ctx1.canvas.height = screen.height *.9//window.innerHeight -1; //height//
+    ctx2.canvas.width  = screen.width //window.innerWidth  -1; // width//
+    ctx2.canvas.height = screen.height *.9//window.innerHeight -1; // height//
     ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
-    ctx3.canvas.height = screen.height//window.innerHeight -1; // height//
+    ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//
 
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
