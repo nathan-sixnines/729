@@ -298,6 +298,7 @@ var deltaY = []
     
 var steps = 30
 var step  = 0
+var games = 0
 
 // ctx is the context to add the path to
 // points is a array of points [{x :?, y: ?},...
@@ -929,6 +930,8 @@ function gameOver(){
 
 function newGame(){
 
+    games += 1
+
     nextValues.fill(0)
     
     score = 0
@@ -1094,7 +1097,11 @@ function addRandom(){
     if(Math.random() > 5/9){
         nextValues[pick] = 3
     } else {
-        nextValues[pick] = 1
+        if(mod(games,2)== 0){
+            nextValues[pick] = 3
+        } else {
+            nextValues[pick] = 1
+        }
     }
     //nextValues[0] = 3
   
