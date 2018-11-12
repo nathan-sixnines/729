@@ -687,25 +687,63 @@ function initCanvas(){
     canvas3 = document.getElementById("arrowCanvas");
     ctx3    = canvas3.getContext("2d");
 
-    //if( window.innerHeight < screen.height){
-    height = screen.height *.9//window.innerHeight
-    //} else {
-    //    height = screen.height
-    //}
-    //if( window.innerWidth < screen.width){
-    width = screen.width//window.innerWidth
-    //} else {
-    //    width = screen.width
-    //}
+    var userAgent = window.navigator.userAgent;
+    var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
+    if (isSafari){
     
+        height = window.innerHeight
+        //} else {
+        //    height = screen.height
+        //}
+        //if( window.innerWidth < screen.width){
+        width = window.innerWidth
+        //if( window.innerHeight < screen.height){
+        //height = screen.height *.9//window.innerHeight
+        //} else {
+        //    height = screen.height
+        //}
+        //if( window.innerWidth < screen.width){
+        //width = screen.width//window.innerWidth
+        //} else {
+        //    width = screen.width
+        //}
+        
+        ctx1.canvas.width  = window.innerWidth  -1; //width//
+        ctx1.canvas.height = window.innerHeight -1; //height//
+        ctx2.canvas.width  = window.innerWidth  -1; // width//
+        ctx2.canvas.height = window.innerHeight -1; // height//
+        ctx3.canvas.width  = window.innerWidth  -1;  // width//
+        ctx3.canvas.height = window.innerHeight -1; // height//
 
-    ctx1.canvas.width  = screen.width//window.innerWidth  -1; //width//
-    ctx1.canvas.height = screen.height *.9//window.innerHeight -1; //height//
-    ctx2.canvas.width  = screen.width //window.innerWidth  -1; // width//
-    ctx2.canvas.height = screen.height *.9//window.innerHeight -1; // height//
-    ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
-    ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//
+        /*
+        ctx1.canvas.width  = screen.width//window.innerWidth  -1; //width//
+        ctx1.canvas.height = screen.height *.9//window.innerHeight -1; //height//
+        ctx2.canvas.width  = screen.width //window.innerWidth  -1; // width//
+        ctx2.canvas.height = screen.height *.9//window.innerHeight -1; // height//
+        ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
+        ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//*/
+    } else {
+        //if( window.innerHeight < screen.height){
+        height = window.innerHeight
+        //} else {
+        //    height = screen.height
+        //}
+        //if( window.innerWidth < screen.width){
+        width = window.innerWidth
+        //} else {
+        //    width = screen.width
+        //}
 
+        ctx1.canvas.width  = window.innerWidth  -1; //width//
+        ctx1.canvas.height = window.innerHeight -1; //height//
+        ctx2.canvas.width  = window.innerWidth  -1; // width//
+        ctx2.canvas.height = window.innerHeight -1; // height//
+        ctx3.canvas.width  = window.innerWidth  -1;  // width//
+        ctx3.canvas.height = window.innerHeight -1; // height//
+    
+    }
+    
+    
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
 
@@ -1315,10 +1353,11 @@ document.addEventListener('touchstart', handleTouchStart, false);
 
 document.addEventListener('touchmove', function(evt) {
     // I hate safari
-    //var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
-    //if (isSafari){
-    //    evt.preventDefault();
-    //}
+    var userAgent = window.navigator.userAgent;
+    var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
+    if (isSafari){
+        evt.preventDefault();
+    }
     handleTouchMove(evt)
 })
 
