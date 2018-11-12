@@ -4,7 +4,7 @@
 <canvas id="tileCanvas"></canvas>
 <canvas id="bgtileCanvas"></canvas>
 <canvas id="arrowCanvas"></canvas>
-</div>
+
 <div id="title">
 <h1>729</h1>
 </div>
@@ -31,6 +31,7 @@
 
 <button onclick="newGame()" class="button2"> New Game </button>
 
+</div>
 
 <link rel="stylesheet" href="fonts/stylesheet1.css" type="text/css" charset="utf-8" />
 <link rel="stylesheet" href="fonts/kit2/stylesheet.css" type="text/css" charset="utf-8" />
@@ -43,7 +44,7 @@
 
 body { 
 
-
+    overflow: hidden;
 	//font-family: 'just_another_handregular';
 	font-family: 'nothing_you_could_sayregular';					
 
@@ -52,6 +53,9 @@ body {
        margin: 0; 
        padding: 0
     }
+#container{
+    height:100%; overflow:hidden;
+}
 #tileCanvas { 
      position: absolute;
      left: 0;
@@ -85,7 +89,7 @@ body {
     left: 0;
     right: 0;
     margin: 0;//auto;
-    zindez: -1;
+    zindez: -2;
     font-size: 6vw;
     display: inline-block;
     vertical-align: middle;
