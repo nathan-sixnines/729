@@ -39,6 +39,7 @@
 <style>
 
 * {
+    touch-action: none
     box-sizing: border-box
 } 
 
@@ -1301,7 +1302,7 @@ function handleTouchStart(evt) {
 };                                                
 
 function handleTouchMove(evt) {
-    e.preventDefault();
+    //evt.preventDefault();
     if ( ! xDown || ! yDown ) {
         return;
     }
