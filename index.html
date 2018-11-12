@@ -1315,10 +1315,10 @@ document.addEventListener('touchstart', handleTouchStart, false);
 
 document.addEventListener('touchmove', function(evt) {
     // I hate safari
-    var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
-    if (isSafari){
-        evt.preventDefault();
-    }
+    //var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
+    //if (isSafari){
+    //    evt.preventDefault();
+    //}
     handleTouchMove(evt)
 })
 
