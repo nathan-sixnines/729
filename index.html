@@ -1301,6 +1301,7 @@ function handleTouchStart(evt) {
 };                                                
 
 function handleTouchMove(evt) {
+    e.preventDefault();
     if ( ! xDown || ! yDown ) {
         return;
     }
