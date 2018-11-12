@@ -741,8 +741,8 @@ function initCanvas(){
     
     }
     
-        console.log(height)
-        console.log(width)
+        //console.log(height)
+        //console.log(width)
     
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
@@ -776,13 +776,13 @@ function initCanvas(){
         resizes.push(document.getElementById('instructions'))
         resizes.push(document.getElementById('title'))
         
-        console.log(resizes)
+        //console.log(resizes)
         
         for(var i = 0; i < resizes.length; i++){
         
             oldSize = parseFloat(getComputedStyle(resizes[i])['font-size'])
             resizes[i].style.fontSize  = (oldSize / ratio).toString() + 'px'
-            console.log(getComputedStyle(resizes[i]))
+            //console.log(getComputedStyle(resizes[i]))
             
         }
         
@@ -796,7 +796,7 @@ function initCanvas(){
         restartStyle.position = 'absolute'
         instructions.position = 'absolute'
         
-        scoreStyle.left     = '20%'
+        scoreStyle.left     = '27%'
         restartStyle.right  = '20%'
         
         scoreStyle.top     = '63%'
@@ -1413,6 +1413,8 @@ document.addEventListener('touchmove', function(evt) {
     }
     handleTouchMove(evt)
 })
+
+document.addEventListener("resize", initCanvas);
 
 //document.addEventListener('touchmove', handleTouchMove, false);
 
