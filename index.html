@@ -456,14 +456,24 @@ function hexagon(x, y, ctx, value){
     
     //console.log(points)
     
+    
+    
     ctx.strokeStyle = 'black'
     
-    ctx.lineWidth = 2
+    if(isSafari){
+        ctx.lineWidth = 1
+        
+        if(value != 0){
+            ctx.lineWidth += 2
+        }
+    } else {
+        ctx.lineWidth = 3
+        
+        if(value != 0){
+            ctx.lineWidth += 6
+        }
     
-    if(value != 0){
-        ctx.lineWidth += 3
     }
-    
     ctx.beginPath()
     
     
@@ -647,6 +657,9 @@ var canvas3 = document.getElementById("arrowCanvas");
 var ctx3    = canvas3.getContext("2d");
 
 
+var userAgent = window.navigator.userAgent;
+var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
+
 var height = null
 var width  = null
 
@@ -691,55 +704,28 @@ function initCanvas(){
     var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
     if (isSafari){
     
-        height = window.innerHeight
-        //} else {
-        //    height = screen.height
-        //}
-        //if( window.innerWidth < screen.width){
-        width = window.innerWidth
-        //if( window.innerHeight < screen.height){
-        //height = screen.height *.9//window.innerHeight
-        //} else {
-        //    height = screen.height
-        //}
-        //if( window.innerWidth < screen.width){
-        //width = screen.width//window.innerWidth
-        //} else {
-        //    width = screen.width
-        //}
-        
-        ctx1.canvas.width  = window.innerWidth  -1; //width//
-        ctx1.canvas.height = window.innerHeight -1; //height//
-        ctx2.canvas.width  = window.innerWidth  -1; // width//
-        ctx2.canvas.height = window.innerHeight -1; // height//
-        ctx3.canvas.width  = window.innerWidth  -1;  // width//
-        ctx3.canvas.height = window.innerHeight -1; // height//
 
-        /*
+        height = screen.height *.9//window.innerHeight
+        width = screen.width//window.innerWidth
+
+
         ctx1.canvas.width  = screen.width//window.innerWidth  -1; //width//
         ctx1.canvas.height = screen.height *.9//window.innerHeight -1; //height//
         ctx2.canvas.width  = screen.width //window.innerWidth  -1; // width//
         ctx2.canvas.height = screen.height *.9//window.innerHeight -1; // height//
         ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
-        ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//*/
+        ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//
     } else {
-        //if( window.innerHeight < screen.height){
-        height = window.innerHeight
-        //} else {
-        //    height = screen.height
-        //}
-        //if( window.innerWidth < screen.width){
+        height = window.innerHeight *.9
         width = window.innerWidth
-        //} else {
-        //    width = screen.width
-        //}
 
-        ctx1.canvas.width  = window.innerWidth  -1; //width//
-        ctx1.canvas.height = window.innerHeight -1; //height//
-        ctx2.canvas.width  = window.innerWidth  -1; // width//
-        ctx2.canvas.height = window.innerHeight -1; // height//
-        ctx3.canvas.width  = window.innerWidth  -1;  // width//
-        ctx3.canvas.height = window.innerHeight -1; // height//
+
+        ctx1.canvas.width  = window.innerWidth  ; //width//
+        ctx1.canvas.height = window.innerHeight *.9; //height//
+        ctx2.canvas.width  = window.innerWidth  ; // width//
+        ctx2.canvas.height = window.innerHeight *.9; // height//
+        ctx3.canvas.width  = window.innerWidth  ;  // width//
+        ctx3.canvas.height = window.innerHeight *.9; // height//
     
     }
     
@@ -754,8 +740,7 @@ function initCanvas(){
     var canvasLeft = canvas1.offsetLeft;
     var canvasTop  = canvas1.offsetTop;
     var count = 0
-    var drawX = width/2//520
-    var drawY = height*3/7  //520
+
     
     min = width
     if(width > height){
@@ -763,8 +748,17 @@ function initCanvas(){
         min = height
     }
     
+    if(isSafari){
+        circleSize = Math.floor(min / 6)
+        var drawX = width/2//520
+        var drawY = height*3/7  //520
+    }
+    else {
+        circleSize = Math.floor(min / 5)
+        var drawX = width/2//520
+        var drawY = height*.4  //520
+    }
     
-    circleSize = Math.floor(min / 5)
     directions = [2,3,4,5,0,1]
     
     fontSize = circleSize/2.5
