@@ -38,6 +38,8 @@
 
 <style>
 
+// z index notes: https://css-tricks.com/forums/topic/safari-for-ios-z-index-ordering-bug-while-scrolling-a-page-with-a-fixed-element/
+
 * {
     touch-action: none
     box-sizing: border-box
@@ -689,12 +691,12 @@ function initCanvas(){
     //}
     
 
-    ctx1.canvas.width  = window.innerWidth; //width//
-    ctx1.canvas.height = window.innerHeight; //height//
-    ctx2.canvas.width  = window.innerWidth; // width//
-    ctx2.canvas.height = window.innerHeight; // height//
-    ctx3.canvas.width  = window.innerWidth;  // width//
-    ctx3.canvas.height = window.innerHeight; // height//
+    ctx1.canvas.width  = window.innerWidth  -1; //width//
+    ctx1.canvas.height = window.innerHeight -1; //height//
+    ctx2.canvas.width  = window.innerWidth  -1; // width//
+    ctx2.canvas.height = window.innerHeight -1; // height//
+    ctx3.canvas.width  = window.innerWidth  -1;  // width//
+    ctx3.canvas.height = window.innerHeight -1; // height//
 
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
