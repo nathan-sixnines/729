@@ -458,10 +458,10 @@ function hexagon(x, y, ctx, value){
     
     ctx.strokeStyle = 'black'
     
-    ctx.lineWidth = 3
+    ctx.lineWidth = 2
     
     if(value != 0){
-        ctx.lineWidth += 4
+        ctx.lineWidth += 3
     }
     
     ctx.beginPath()
@@ -688,23 +688,23 @@ function initCanvas(){
     ctx3    = canvas3.getContext("2d");
 
     //if( window.innerHeight < screen.height){
-    height = window.innerHeight
+    height = screen.height//window.innerHeight
     //} else {
     //    height = screen.height
     //}
     //if( window.innerWidth < screen.width){
-    width = window.innerWidth
+    width = screen.width//window.innerWidth
     //} else {
     //    width = screen.width
     //}
     
 
-    ctx1.canvas.width  = window.innerWidth  -1; //width//
-    ctx1.canvas.height = window.innerHeight -1; //height//
-    ctx2.canvas.width  = window.innerWidth  -1; // width//
-    ctx2.canvas.height = window.innerHeight -1; // height//
-    ctx3.canvas.width  = window.innerWidth  -1;  // width//
-    ctx3.canvas.height = window.innerHeight -1; // height//
+    ctx1.canvas.width  = screen.width//window.innerWidth  -1; //width//
+    ctx1.canvas.height = screen.height//window.innerHeight -1; //height//
+    ctx2.canvas.width  = screen.width//window.innerWidth  -1; // width//
+    ctx2.canvas.height = screen.height//window.innerHeight -1; // height//
+    ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
+    ctx3.canvas.height = screen.height//window.innerHeight -1; // height//
 
     canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
     canvas2.style.zIndex = -1
