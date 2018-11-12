@@ -29,9 +29,8 @@
         <p">Score: </p>
 </div>
 
-<div id ="reset">
-<button onclick="newGame()" class="button2">New Game</button>
-</div>
+<button onclick="newGame()" class="button2"> New Game </button>
+
 
 <link rel="stylesheet" href="fonts/stylesheet1.css" type="text/css" charset="utf-8" />
 <link rel="stylesheet" href="fonts/kit2/stylesheet.css" type="text/css" charset="utf-8" />
@@ -154,16 +153,24 @@ body {
     font-size: 4vw;
 }
 .button2 {
-    background-color: #4CAF50; /* Green */
-    border: none;
+    border-radius: 2.5vw;
+    border: .5vw solid #000000;
+    padding: 2vw 4vw;
+    
+    display: inline-block; 
+    
     color: white;
-    text-align: center;
+    background-color: #4CAF50; /* Green */
+    position: absolute;
     text-decoration: none;
-    display: inline-block;
+    top: 71%;
+    left: 52%;
+    right: 5%;
+    margin: 2vw;
     font-family: 'nothing_you_could_sayregular';
     font-size: 5.5vw;
-    display: block;
-    width: 100%;
+    vertical-align: middle;
+    text-align: right;
 }
 .contButton {
     background-color: #4CAF50; /* Green */
@@ -189,7 +196,7 @@ body {
     top: 71%;
     left: 5%;
     right: 52%;
-    margin: auto;
+    margin: 2vw;
     font-size: 5.5vw;
     //display: inline-block;
     vertical-align: middle;
@@ -200,11 +207,11 @@ body {
 
     border-radius: 2.5vw;
     border: .5vw solid #000000;
-    padding: 2vw;
+    padding: 0vw;
     
     display: inline-block; 
     
-    background-color:#4CAF50; /* Green */
+    background-color: white; //#4CAF50; /* Green */
     position: absolute;
     top: 71%;
     left: 52%;
