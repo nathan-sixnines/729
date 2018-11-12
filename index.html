@@ -260,6 +260,7 @@ body {
     text-align: left;
 
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sketch-js@1.1.3/js/sketch.min.js"></script>
 
 <script>
 // https://gist.github.com/joates/6584908
@@ -423,23 +424,12 @@ function roundedPoly(ctx, points, radiusAll) {
 function hexagon(x, y, ctx, value){
    
     var fill = false
-    var fillG = 0
-    var fillR = 0
-    if(value % 6 == 0){
-        fillR = mod(value * 50,255)
-    } else {
-    
-        fillG = mod(value * 51,255)
-    }
 
-    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
-   
     if(value != 0){
         fill = true
-        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-    }else {
-        ctx.fillStyle = "rgba(245,245,220, 1)";
     }
+    
+    ctx.fillStyle = getColor(value)
    
     ret = offset2(x, y, 0 , circleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
     var cornerX = ret[0]
@@ -501,10 +491,13 @@ function hexagon(x, y, ctx, value){
         ctx.fillStyle = "#000000"
     }
     
+    //console.log(getColor(value))
+    //console.log(getColorInv(value))
+    
     if(fill){
         var digits = value.toString().length
     
-        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
+        ctx.fillStyle = getColorInv(value); 
         
         //https://stackoverflow.com/questions/13771310/center-proportional-font-text-in-an-html5-canvas
         ctx.textBaseline = 'middle';
@@ -512,6 +505,46 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
+}
+
+function getColor(value){
+
+    var fillR = 0
+    var fillG = 0 
+    var fillG = 0 
+
+    if(value % 6 == 0){
+        fillR = mod(value * 50,255)
+    } else {
+        fillG = mod(value * 51,255)
+    }
+    var fillB = mod(value * 61,255)
+    
+    if(value != 0){
+        return "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
+    }else {
+        return "rgba(245,245,220, 1)";
+    }
+}
+
+function getColorInv(value){
+
+    var fillR = 0
+    var fillG = 0 
+    var fillG = 0 
+
+    if(value % 6 == 0){
+        fillR = mod(value * 50,255)
+    } else {
+        fillG = mod(value * 51,255)
+    }
+    var fillB = mod(value * 61,255)
+    
+    if(value != 0){
+        return "rgba(" + (255-fillR) + "," + (255-fillG) + "," + (255-fillB) + ", 1)"; 
+    }else {
+        return "rgba(245,245,220, 1)";
+    }
 }
 
 function hexagonOld(x, y, ctx, value){
@@ -694,15 +727,15 @@ var posY = []
 
 var fontSize = circleSize/2.5
 
+var smoke = false
+var smokeFrame = 0
+
 ctx1.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 ctx2.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
 
 var scoreDiv = document.getElementById("score");
 scoreDiv.innerText ="Score: " + score.toString()
-
-
-console.log('sanity check')
 
 function initCanvas(){
 
@@ -861,6 +894,18 @@ function drawLoop(){
 
     //console.log("drawstuff")
 
+    if(smoke){
+        if(smokeFrame == 20){
+            smokeFrame = 0
+            smoke      = false
+            ctx3.clearRect(0,0,canvas1.width,canvas1.height)
+        } else {
+            drawSmoke()
+            smokeFrame += 1
+            ctx3.globalAlpha =  1 - (smokeFrame / 20)
+        }
+    }
+    
     if(update || first){
     
         ctx1.clearRect(0,0,canvas1.width,canvas1.height)
@@ -882,6 +927,14 @@ function drawLoop(){
             values = nextValues.slice()
 
             next = actionQueue.shift()
+            
+            //console.log(pops)
+            
+            for(var i = 0; i < pops.length; i++){
+                if(pops[i] == 1){
+                    smoke = true
+                }
+            }
             
             if(next){
                 actionByKeyCode(next)
@@ -977,6 +1030,109 @@ function drawLoop(){
     
 }
 
+var smokeList = []
+var numSmokes = 20 // particles per pop
+
+function Particle( x, y, radius, color ) {
+     this.init( x, y, radius, color );
+     //console.log(this)
+}
+
+Particle.prototype = {
+    init: function( x, y, radius, color ) {
+        this.alive = true;
+        this.radius = radius || 10;
+        this.wander = 1.15;
+        this.theta = Math.random() * Math.PI * 2;
+        this.drag = 0.92;
+        this.color = color
+        this.x = x || 0.0;
+        this.y = y || 0.0;
+        this.vx = 0.0;
+        this.vy = 0.0;
+    },
+    move: function() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= this.drag;
+        this.vy *= this.drag;
+        this.theta += (Math.random()-.5) * this.wander;
+        this.vx += Math.sin( this.theta ) * 0.1;
+        this.vy += Math.cos( this.theta ) * 0.1 - .01;
+        this.radius *= 1.01;
+        this.alive = this.radius > 0.5;
+    },
+    draw: function( ctx ) {
+    
+        //console.log('drawing particle ' + this.x + "  " + this.y)
+        ctx.beginPath();
+        ctx.arc( this.x, this.y, this.radius, 0, Math.PI * 2 );
+        ctx.fillStyle = this.color;
+        ctx.fill();
+    }
+};
+
+
+
+function drawSmoke(){
+
+    ctx3.clearRect(0,0,canvas1.width,canvas1.height)
+
+    if(smokeFrame == 0){
+    
+        
+        smokeList = []
+    
+        for(var i = 0; i < pops.length; i++){
+            if(pops[i] == 1){
+                particleList = []
+                
+                var color = getColor(values[i])
+                var color2 = getColor(values[i]/3)
+                for(var j = 0; j < 40; j++){
+                
+                    particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
+                                                    posY[i] +((Math.random() -.5) *circleSize),
+                                                    Math.random()* 30, 
+                                                    color))       
+                                                    
+                    particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
+                                                    posY[i] +((Math.random() -.5) *circleSize),
+                                                    Math.random()* 30, 
+                                                    '#fff'))
+                                                                                 
+                }
+                for(var j = 0; j < 20; j++){
+                
+                    particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
+                                                    posY[i] +((Math.random() -.5) *circleSize),
+                                                    Math.random()* 30, 
+                                                    color2))
+                }
+                
+                smokeList.push(particleList.slice())
+            }
+        }
+    }
+    
+    //console.log(smokeList)
+    
+    for(var i = 0; i < smokeList.length; i++){
+        //console.log(i)
+        for(var j = 0; j < smokeList[i].length; j++){
+        
+            //console.log(smokeList[i][j])
+        
+            smokeList[i][j].move()
+            smokeList[i][j].move()
+            smokeList[i][j].move()
+            smokeList[i][j].move()
+            smokeList[i][j].draw(ctx3)
+        }
+    }
+
+
+}
 
 function checkGameOver(){
     
@@ -1400,6 +1556,7 @@ function actionByKeyCode(code){
             break
     }
 }
+
 
 
 document.addEventListener('touchstart', handleTouchStart, false);        
