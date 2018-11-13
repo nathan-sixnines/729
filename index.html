@@ -45,6 +45,18 @@
 <p>Stay in touch for the next project!</p>
 </div>
 
+<div id="wideScreen_instruct" style="display: none;  text-align: center;  z-index: 50; position: absolute; top: 0% ; right:0%;  border-radius: 1.25vw; border: .1vw solid #000000; padding: 2vw 4vw;">
+    <p>This game is intended for a phone with a touchscreen.</p>
+    <p>If you have a QR reader on your phone</p>
+    <p> you can use the code below to get the link.</p>
+    <img src="graphics/qrcode.png">
+    <p>You can also play on this page with the keyboard instead.</p>
+    <img src="graphics/arrow_directions.png"</p>
+    <p></p>
+    <button style=" border-radius: 1.25vw; border: .1vw solid #000000;   z-index: 50; padding: .1vw .4vw; background-color: #4CAF50; font-size: .8vw"
+    type="button" onclick="hidewideScreenStuff()">Hide</button>
+</div>
+
 <script src="https://platform.twitter.com/widgets.js"></script>
 <a href="https://twitter.com/intent/follow?screen_name=Aeium"  ><img id='twitlinkPic' style="position:absolute; left:20%; top:92.4%; z-index:50;  border: 0px none ; padding: 0px; height:4.5vw" src="graphics/follow_aeium.png" /></a>
 
@@ -904,6 +916,9 @@ var ctx4    = canvas4.getContext("2d");
         scoreStyle.top     = '63%'
         restartStyle.top   = '63%'
         
+        scoreStyle.border    = '.1vw solid #000000'
+        restartStyle.border  = '.1vw solid #000000'
+        
         twitDesc.left      = '35%'
         twitDesc.top       =  '86%'
         twitDesc.fontSize  = '.8vw'
@@ -916,6 +931,10 @@ var ctx4    = canvas4.getContext("2d");
         paypalImg.height   = '5vw'
         
         instructions.top = '80%'
+        
+        wideScreen_instruct = document.getElementById("wideScreen_instruct")
+        
+        wideScreen_instruct.style.display = 'block'
         
 
     }
@@ -966,6 +985,16 @@ var ctx4    = canvas4.getContext("2d");
     
     //console.log(posX)
     //console.log(posY)
+
+}
+
+function hidewideScreenStuff(){
+
+        wideScreen_instruct = document.getElementById("wideScreen_instruct")
+        
+        wideScreen_instruct.style.display = 'none'
+        
+        console.log(wideScreen_instruct.style)
 
 }
 
