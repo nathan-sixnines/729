@@ -908,10 +908,9 @@ var shift = 0
 var shift2 = 0
 function drawLoop(){
 
-    //console.log("drawstuff")
-
-    drawBackground(bgcount)
-    bgcount = bgcount + 1
+    //console.log("drawstuff"
+    
+    drawBackground(Math.floor(Math.random() * 55))
     
     if(smoke){
         if(smokeFrame == 10){
@@ -1111,10 +1110,11 @@ console.log({deltaCount:0,end: Math.floor(Math.random() * 3000)})
 console.log(Math.floor(Math.random() * 3000))
 console.log((Math.random() * 3000))
 
-function drawBackground(start){
+function drawBackground(shape){
 
-    ctx4.clearRect(0,0,width,height)
-    ctx4.globalAlpha = .25
+    //ctx4.clearRect(0,0,width,height)
+    ctx4.globalCompositeOperation="scree" //"xor";
+    ctx4.globalAlpha = .1
     
     if(bgStarts.length == 0){
     
@@ -1186,6 +1186,7 @@ function drawBackground(start){
     
     for(var i = 0; i < bgStarts.length; i++){
 
+    
         if(bgSteps[i].deltaCount == bgSteps[i].end){ // if it's reached the target make a new one
             
             bgStarts[i]  = fiveAbove()
@@ -1194,28 +1195,31 @@ function drawBackground(start){
             bgColors[i]  = pastels[Math.floor(Math.random()*5)]
         
         }
-    
-        currentPos = [  {x:bgStarts[i][0].x + bgVectors[i][0].x * bgSteps[i].deltaCount, y:bgStarts[i][0].y + bgVectors[i][0].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][1].x + bgVectors[i][1].x * bgSteps[i].deltaCount, y:bgStarts[i][1].y + bgVectors[i][1].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][2].x + bgVectors[i][2].x * bgSteps[i].deltaCount, y:bgStarts[i][2].y + bgVectors[i][2].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][3].x + bgVectors[i][3].x * bgSteps[i].deltaCount, y:bgStarts[i][3].y + bgVectors[i][3].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][4].x + bgVectors[i][4].x * bgSteps[i].deltaCount, y:bgStarts[i][4].y + bgVectors[i][4].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][5].x + bgVectors[i][5].x * bgSteps[i].deltaCount, y:bgStarts[i][5].y + bgVectors[i][5].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][6].x + bgVectors[i][6].x * bgSteps[i].deltaCount, y:bgStarts[i][6].y + bgVectors[i][6].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][7].x + bgVectors[i][7].x * bgSteps[i].deltaCount, y:bgStarts[i][7].y + bgVectors[i][7].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][8].x + bgVectors[i][8].x * bgSteps[i].deltaCount, y:bgStarts[i][8].y + bgVectors[i][8].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][9].x + bgVectors[i][9].x * bgSteps[i].deltaCount, y:bgStarts[i][9].y + bgVectors[i][9].y * bgSteps[i].deltaCount},
-                        {x:bgStarts[i][10].x + bgVectors[i][10].x * bgSteps[i].deltaCount, y:bgStarts[i][10].y + bgVectors[i][10].y * bgSteps[i].deltaCount} ]
-    
-                        
-        //console.log(currentPos)
-                        
-        ctx4.beginPath()
         
-        roundedPoly(ctx4, currentPos, circleSize/20)
+        if(shape == i){
+    
+            currentPos = [  {x:bgStarts[i][0].x + bgVectors[i][0].x * bgSteps[i].deltaCount, y:bgStarts[i][0].y + bgVectors[i][0].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][1].x + bgVectors[i][1].x * bgSteps[i].deltaCount, y:bgStarts[i][1].y + bgVectors[i][1].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][2].x + bgVectors[i][2].x * bgSteps[i].deltaCount, y:bgStarts[i][2].y + bgVectors[i][2].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][3].x + bgVectors[i][3].x * bgSteps[i].deltaCount, y:bgStarts[i][3].y + bgVectors[i][3].y * bgSteps[i].deltaCount} ] 
+                            
+                            /*,
+                            {x:bgStarts[i][4].x + bgVectors[i][4].x * bgSteps[i].deltaCount, y:bgStarts[i][4].y + bgVectors[i][4].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][5].x + bgVectors[i][5].x * bgSteps[i].deltaCount, y:bgStarts[i][5].y + bgVectors[i][5].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][6].x + bgVectors[i][6].x * bgSteps[i].deltaCount, y:bgStarts[i][6].y + bgVectors[i][6].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][7].x + bgVectors[i][7].x * bgSteps[i].deltaCount, y:bgStarts[i][7].y + bgVectors[i][7].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][8].x + bgVectors[i][8].x * bgSteps[i].deltaCount, y:bgStarts[i][8].y + bgVectors[i][8].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][9].x + bgVectors[i][9].x * bgSteps[i].deltaCount, y:bgStarts[i][9].y + bgVectors[i][9].y * bgSteps[i].deltaCount},
+                            {x:bgStarts[i][10].x + bgVectors[i][10].x * bgSteps[i].deltaCount, y:bgStarts[i][10].y + bgVectors[i][10].y * bgSteps[i].deltaCount} ] */
         
-        ctx4.fillStyle = bgColors[i]
-        ctx4.fill()
+            ctx4.beginPath()
+            
+            roundedPoly(ctx4, currentPos, circleSize/20)
+            
+            ctx4.fillStyle = bgColors[i]
+            ctx4.fill()
+        
+        }
         
         bgSteps[i].deltaCount += 1
 
@@ -1227,14 +1231,16 @@ function fiveAbove(){
     return [{x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height} ]
+            
+            /*,
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
-            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
-            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height}]
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height}]*/
 
 }
 
@@ -1242,28 +1248,32 @@ function fiveBelow(){
     return [{x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height} ] 
+            
+            /*,
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
             {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
-            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
-            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height}]
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height}]*/
 }
 function fiveVecs(start, target, steps){
 
     return [{x: (target[0].x - start[0].x)/steps, y: (target[0].y - start[0].y)/steps},
             {x: (target[1].x - start[1].x)/steps, y: (target[1].y - start[1].y)/steps},
             {x: (target[2].x - start[2].x)/steps, y: (target[2].y - start[2].y)/steps},
-            {x: (target[3].x - start[3].x)/steps, y: (target[3].y - start[3].y)/steps},
+            {x: (target[3].x - start[3].x)/steps, y: (target[3].y - start[3].y)/steps} ] 
+            
+            /*,
             {x: (target[4].x - start[4].x)/steps, y: (target[4].y - start[4].y)/steps},
             {x: (target[5].x - start[5].x)/steps, y: (target[5].y - start[5].y)/steps},
             {x: (target[6].x - start[6].x)/steps, y: (target[6].y - start[6].y)/steps},
             {x: (target[7].x - start[7].x)/steps, y: (target[7].y - start[7].y)/steps},
             {x: (target[8].x - start[8].x)/steps, y: (target[8].y - start[8].y)/steps},
             {x: (target[9].x - start[9].x)/steps, y: (target[9].y - start[9].y)/steps},
-            {x: (target[10].x - start[10].x)/steps, y: (target[10].y - start[10].y)/steps}]
+            {x: (target[10].x - start[10].x)/steps, y: (target[10].y - start[10].y)/steps}] */
 
 }
 
