@@ -32,12 +32,32 @@
 
 <button onclick="newGame()" class="button2"> New Game </button>
 
+<div id='paypal'  style="position:absolute; left:13%; top:87%; z-index:50">
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations" />
+<input type="hidden" name="business" value="3YMPULTFTQ3NN" />
+<input type="hidden" name="item_number" value="729" />
+<input type="hidden" name="currency_code" value="USD" />
+<input type="image" style="border: 0px none ; padding: 0px; height:10vw;" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+</form>
+</div>
+
+<script src="https://platform.twitter.com/widgets.js"></script>
+<a href="https://twitter.com/intent/follow?screen_name=Aeium"><img src="/graphics/follow_aeium.png" /></a>
+
 </div>
 
 <link rel="stylesheet" href="fonts/stylesheet1.css" type="text/css" charset="utf-8" />
 <link rel="stylesheet" href="fonts/kit2/stylesheet.css" type="text/css" charset="utf-8" />
 
 <style>
+
+//     top: 68%;
+//    left: 5%;
+//    right: 52%;
+//    margin: 2vw;
+//    font-size: 5.5vw;
 
 // z index notes: https://css-tricks.com/forums/topic/safari-for-ios-z-index-ordering-bug-while-scrolling-a-page-with-a-fixed-element/
 
@@ -52,6 +72,18 @@ html {
   width: 100%;
   overflow: hidden;
   -webkit-overflow-scrolling: auto;
+}
+
+#twitter-widget-0{
+
+    position:absolute; 
+    right:13% !important;
+    top:87% !important;
+    z-index:50 !important;
+    border: 0px none ; 
+    padding: 0px; 
+    height:30vw "
+
 }
 
 body { 
@@ -79,6 +111,7 @@ body {
     -webkit-overflow-scrolling: auto;
     height:100% -1px; overflow:hidden;
 }
+
 #tileCanvas { 
      position: absolute;
      left: 0;
@@ -121,7 +154,7 @@ body {
 #instructions {  
 
     position: absolute;
-    top: 79%;
+    top: 76%;
     left: 0;
     right: 0;
     margin: auto;
@@ -200,7 +233,7 @@ body {
     background-color: #4CAF50; /* Green */
     position: absolute;
     text-decoration: none;
-    top: 71%;
+    top: 68%;
     left: 52%;
     right: 5%;
     margin: 2vw;
@@ -236,7 +269,7 @@ body {
     
     background-color:white;
     position: absolute;
-    top: 71%;
+    top: 68%;
     left: 5%;
     right: 52%;
     margin: 2vw;
@@ -913,7 +946,7 @@ function drawLoop(){
 
     //console.log("drawstuff"
     
-    drawBackground(Math.floor(Math.random() * 95))
+    //drawBackground(Math.floor(Math.random() * 95))
     
     if(smoke){
         if(smokeFrame == 10){
@@ -1831,7 +1864,7 @@ for(var i = 0; i < 19; i++){  //posX.length
    
 }
 
-drawBackground()
+//drawBackground()
 
 addRandom()
 addRandom()
