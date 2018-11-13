@@ -895,14 +895,14 @@ function drawLoop(){
     //console.log("drawstuff")
 
     if(smoke){
-        if(smokeFrame == 20){
+        if(smokeFrame == 10){
             smokeFrame = 0
             smoke      = false
             ctx3.clearRect(0,0,canvas1.width,canvas1.height)
         } else {
             drawSmoke()
             smokeFrame += 1
-            ctx3.globalAlpha =  1 - (smokeFrame / 20)
+            ctx3.globalAlpha =  1 - (smokeFrame / 10)
         }
     }
     
@@ -918,6 +918,11 @@ function drawLoop(){
         
         var updateScore = false
         
+        if(step >= steps - 5){
+        
+            smoke = true
+        
+        }
         
         if(step >= steps){
             slide = false
@@ -946,13 +951,12 @@ function drawLoop(){
         
         var winBool = false
         
-        score = 0
+        //score = 0
         
         var zeros = 0
         for(var i = 0; i<values.length;i++){
         
             var value = values[i]
-            score += value
             if(value == 0){
                 zeros += 1 // zeros++ doesn't seem right with no semicolon
             }
@@ -1033,13 +1037,13 @@ function drawLoop(){
 var smokeList = []
 var numSmokes = 20 // particles per pop
 
-function Particle( x, y, radius, color ) {
-     this.init( x, y, radius, color );
+function Particle( x, y, radius, color, scale ) {
+     this.init( x, y, radius, color, scale );
      //console.log(this)
 }
 
 Particle.prototype = {
-    init: function( x, y, radius, color ) {
+    init: function( x, y, radius, color, scale ) {
         this.alive = true;
         this.radius = radius || 10;
         this.wander = 1.15;
@@ -1050,6 +1054,7 @@ Particle.prototype = {
         this.y = y || 0.0;
         this.vx = 0.0;
         this.vy = 0.0;
+        this.scale = scale;
     },
     move: function() {
         this.x += this.vx;
@@ -1057,9 +1062,9 @@ Particle.prototype = {
         this.vx *= this.drag;
         this.vy *= this.drag;
         this.theta += (Math.random()-.5) * this.wander;
-        this.vx += Math.sin( this.theta ) * 0.1;
-        this.vy += Math.cos( this.theta ) * 0.1 - .01;
-        this.radius *= 1.01;
+        this.vx += Math.sin( this.theta ) * 0.3;
+        this.vy += Math.cos( this.theta ) * 0.3 - .02;
+        this.radius *= this.scale;
         this.alive = this.radius > 0.5;
     },
     draw: function( ctx ) {
@@ -1093,21 +1098,21 @@ function drawSmoke(){
                 
                     particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
                                                     posY[i] +((Math.random() -.5) *circleSize),
-                                                    Math.random()* 30, 
-                                                    color))       
+                                                    Math.random()* height/60, 
+                                                    color, 1.03))       
                                                     
                     particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
                                                     posY[i] +((Math.random() -.5) *circleSize),
-                                                    Math.random()* 30, 
-                                                    '#fff'))
+                                                    Math.random()* height/60, 
+                                                    '#fff', 1.03))
                                                                                  
                 }
-                for(var j = 0; j < 20; j++){
+                for(var j = 0; j < 6; j++){
                 
-                    particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
-                                                    posY[i] +((Math.random() -.5) *circleSize),
+                    particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize * 1.3),
+                                                    posY[i] +((Math.random() -.5) *circleSize * 1.3) ,
                                                     Math.random()* 30, 
-                                                    color2))
+                                                    '#fa0', .94))
                 }
                 
                 smokeList.push(particleList.slice())
@@ -1124,9 +1129,9 @@ function drawSmoke(){
             //console.log(smokeList[i][j])
         
             smokeList[i][j].move()
-            smokeList[i][j].move()
-            smokeList[i][j].move()
-            smokeList[i][j].move()
+            //smokeList[i][j].move()
+            //smokeList[i][j].move()
+            //smokeList[i][j].move()
             smokeList[i][j].draw(ctx3)
         }
     }
@@ -1300,6 +1305,7 @@ function slideCol(col, up){
                     outCol.pop(value)
                     outCol.pop(value)
                     outCol.push(value * 3)
+                    score += value * 3
                     targetMarker = targetMarker - 2
                   
                     slides[col[i]]    = col[targetMarker]
