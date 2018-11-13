@@ -4,6 +4,7 @@
 <canvas id="tileCanvas"></canvas>
 <canvas id="bgtileCanvas"></canvas>
 <canvas id="arrowCanvas"></canvas>
+<canvas id='background'></canvas>
 
 <div id="title">
 <h1>729</h1>
@@ -137,6 +138,7 @@ body {
     
     display: none; 
     
+    z-index: 50;
     background-color:white;
     position: absolute;
     top: 40%;
@@ -156,7 +158,8 @@ body {
     padding: 2vw;
     
     display: none; 
-    
+   
+    z-index: 50; 
     background-color:white;
     position: absolute;
     top: 40%;
@@ -475,9 +478,7 @@ function hexagon(x, y, ctx, value){
     
     }
     ctx.beginPath()
-    
-    
-    
+
     roundedPoly(ctx, points, circleSize/8)
 
     ctx.fill()
@@ -692,12 +693,16 @@ function offsetExact(x, y, angle, factor){
 
 var score = 0
 
+// these are not in order sorry. background < bgtile < tile < arrow
+
 var canvas1 = document.getElementById("tileCanvas");
 var ctx1    = canvas1.getContext("2d");
 var canvas2 = document.getElementById("bgtileCanvas");
 var ctx2    = canvas2.getContext("2d");
 var canvas3 = document.getElementById("arrowCanvas");
 var ctx3    = canvas3.getContext("2d");
+var canvas4 = document.getElementById("background");
+var ctx4    = canvas4.getContext("2d");
 
 
 var userAgent = window.navigator.userAgent;
@@ -739,12 +744,14 @@ scoreDiv.innerText ="Score: " + score.toString()
 
 function initCanvas(){
 
-    canvas1 = document.getElementById("tileCanvas");
-    ctx1    = canvas1.getContext("2d");
-    canvas2 = document.getElementById("bgtileCanvas");
-    ctx2    = canvas2.getContext("2d");
-    canvas3 = document.getElementById("arrowCanvas");
-    ctx3    = canvas3.getContext("2d");
+var canvas1 = document.getElementById("tileCanvas");
+var ctx1    = canvas1.getContext("2d");
+var canvas2 = document.getElementById("bgtileCanvas");
+var ctx2    = canvas2.getContext("2d");
+var canvas3 = document.getElementById("arrowCanvas");
+var ctx3    = canvas3.getContext("2d");
+var canvas4 = document.getElementById("background");
+var ctx4    = canvas4.getContext("2d");
 
     var userAgent = window.navigator.userAgent;
     var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
@@ -761,6 +768,8 @@ function initCanvas(){
         ctx2.canvas.height = screen.height *.9//window.innerHeight -1; // height//
         ctx3.canvas.width  = screen.width//window.innerWidth  -1;  // width//
         ctx3.canvas.height = screen.height *.9//window.innerHeight -1; // height//
+        ctx4.canvas.width  = screen.width//window.innerWidth  -1;  // width//
+        ctx4.canvas.height = screen.height *.9//window.innerHeight -1; // height//
     } else {
         height = window.innerHeight *.9
         width = window.innerWidth
@@ -771,14 +780,18 @@ function initCanvas(){
         ctx2.canvas.height = window.innerHeight *.9; // height//
         ctx3.canvas.width  = window.innerWidth  ;  // width//
         ctx3.canvas.height = window.innerHeight *.9; // height//
+        ctx4.canvas.width  = window.innerWidth  ;  // width//
+        ctx4.canvas.height = window.innerHeight *.9; // height//
     
     }
     
         //console.log(height)
         //console.log(width)
     
-    canvas1.style.zIndex = 0    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
-    canvas2.style.zIndex = -1
+    canvas3.style.zIndex = 40
+    canvas1.style.zIndex = 30    // wooooow fuck that everything online had a dash in z-index for the css but it didn't actually have a dash
+    canvas2.style.zIndex = 20
+    canvas4.style.zIndex = 10
 
     //https://www.quirksmode.org/dom/w3c_cssom.html 
     //console.log(angles)
@@ -888,12 +901,18 @@ function initCanvas(){
     //console.log(posY)
 
 }
+
+var bgcount = 9999990
+
 var shift = 0
 var shift2 = 0
 function drawLoop(){
 
     //console.log("drawstuff")
 
+    drawBackground(bgcount)
+    bgcount = bgcount + 1
+    
     if(smoke){
         if(smokeFrame == 10){
             smokeFrame = 0
@@ -1077,7 +1096,176 @@ Particle.prototype = {
     }
 };
 
+var parity = 0
+var backgroundNum = 18
+var bgStarts  = []  // we data oriented
+var bgVectors = []
+var bgSteps   = []
+var bgColors  = []
 
+
+var pastels = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff']
+var pastels2 =  ['#b3b3b3', '#dfdfdf', '#ffffff', '#c9c9c9', '#8a8a8a']
+
+console.log({deltaCount:0,end: Math.floor(Math.random() * 3000)})
+console.log(Math.floor(Math.random() * 3000))
+console.log((Math.random() * 3000))
+
+function drawBackground(start){
+
+    ctx4.clearRect(0,0,width,height)
+    ctx4.globalAlpha = .25
+    
+    if(bgStarts.length == 0){
+    
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        bgStarts.push(fiveAbove())
+        
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        bgSteps.push({deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)})
+        
+        //console.log(bgSteps)
+        
+        bgSteps[0].deltaCount = Math.floor(Math.random() * bgSteps[0].end)  // so they don't all start at the top
+        bgSteps[1].deltaCount = Math.floor(Math.random() * bgSteps[1].end)
+        bgSteps[2].deltaCount = Math.floor(Math.random() * bgSteps[2].end)
+        bgSteps[3].deltaCount = Math.floor(Math.random() * bgSteps[3].end)
+        bgSteps[4].deltaCount = Math.floor(Math.random() * bgSteps[4].end)
+        bgSteps[5].deltaCount = Math.floor(Math.random() * bgSteps[5].end)
+        bgSteps[6].deltaCount = Math.floor(Math.random() * bgSteps[6].end)
+        bgSteps[7].deltaCount = Math.floor(Math.random() * bgSteps[7].end)
+        bgSteps[8].deltaCount = Math.floor(Math.random() * bgSteps[8].end)
+        bgSteps[9].deltaCount = Math.floor(Math.random() * bgSteps[9].end)
+        bgSteps[10].deltaCount = Math.floor(Math.random() * bgSteps[10].end)
+    
+        bgVectors.push(fiveVecs(bgStarts[0],fiveBelow(), bgSteps[0].end))
+        bgVectors.push(fiveVecs(bgStarts[1],fiveBelow(), bgSteps[1].end))
+        bgVectors.push(fiveVecs(bgStarts[2],fiveBelow(), bgSteps[2].end))
+        bgVectors.push(fiveVecs(bgStarts[3],fiveBelow(), bgSteps[3].end))
+        bgVectors.push(fiveVecs(bgStarts[4],fiveBelow(), bgSteps[4].end))
+        bgVectors.push(fiveVecs(bgStarts[5],fiveBelow(), bgSteps[5].end))
+        bgVectors.push(fiveVecs(bgStarts[6],fiveBelow(), bgSteps[6].end))
+        bgVectors.push(fiveVecs(bgStarts[7],fiveBelow(), bgSteps[7].end))
+        bgVectors.push(fiveVecs(bgStarts[8],fiveBelow(), bgSteps[8].end))
+        bgVectors.push(fiveVecs(bgStarts[9],fiveBelow(), bgSteps[9].end))
+        bgVectors.push(fiveVecs(bgStarts[10],fiveBelow(), bgSteps[10].end))
+        
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+        bgColors.push(pastels[Math.floor(Math.random()*5)])
+    
+    }
+    
+    //console.log(bgSteps) 
+    
+    for(var i = 0; i < bgStarts.length; i++){
+
+        if(bgSteps[i].deltaCount == bgSteps[i].end){ // if it's reached the target make a new one
+            
+            bgStarts[i]  = fiveAbove()
+            bgSteps[i]   = {deltaCount:0,end:Math.floor(Math.random() * 1500 + 1500)}
+            bgVectors[i] = fiveVecs(bgStarts[i],fiveBelow(), bgSteps[i].end)
+            bgColors[i]  = pastels[Math.floor(Math.random()*5)]
+        
+        }
+    
+        currentPos = [  {x:bgStarts[i][0].x + bgVectors[i][0].x * bgSteps[i].deltaCount, y:bgStarts[i][0].y + bgVectors[i][0].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][1].x + bgVectors[i][1].x * bgSteps[i].deltaCount, y:bgStarts[i][1].y + bgVectors[i][1].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][2].x + bgVectors[i][2].x * bgSteps[i].deltaCount, y:bgStarts[i][2].y + bgVectors[i][2].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][3].x + bgVectors[i][3].x * bgSteps[i].deltaCount, y:bgStarts[i][3].y + bgVectors[i][3].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][4].x + bgVectors[i][4].x * bgSteps[i].deltaCount, y:bgStarts[i][4].y + bgVectors[i][4].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][5].x + bgVectors[i][5].x * bgSteps[i].deltaCount, y:bgStarts[i][5].y + bgVectors[i][5].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][6].x + bgVectors[i][6].x * bgSteps[i].deltaCount, y:bgStarts[i][6].y + bgVectors[i][6].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][7].x + bgVectors[i][7].x * bgSteps[i].deltaCount, y:bgStarts[i][7].y + bgVectors[i][7].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][8].x + bgVectors[i][8].x * bgSteps[i].deltaCount, y:bgStarts[i][8].y + bgVectors[i][8].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][9].x + bgVectors[i][9].x * bgSteps[i].deltaCount, y:bgStarts[i][9].y + bgVectors[i][9].y * bgSteps[i].deltaCount},
+                        {x:bgStarts[i][10].x + bgVectors[i][10].x * bgSteps[i].deltaCount, y:bgStarts[i][10].y + bgVectors[i][10].y * bgSteps[i].deltaCount} ]
+    
+                        
+        //console.log(currentPos)
+                        
+        ctx4.beginPath()
+        
+        roundedPoly(ctx4, currentPos, circleSize/20)
+        
+        ctx4.fillStyle = bgColors[i]
+        ctx4.fill()
+        
+        bgSteps[i].deltaCount += 1
+
+    }    
+    
+}
+
+function fiveAbove(){
+    return [{x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:(Math.random() -1) * height}]
+
+}
+
+function fiveBelow(){
+    return [{x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height},
+            {x:(Math.random() -.5) * 2 * width + (width/2),y:Math.random() * height + height}]
+}
+function fiveVecs(start, target, steps){
+
+    return [{x: (target[0].x - start[0].x)/steps, y: (target[0].y - start[0].y)/steps},
+            {x: (target[1].x - start[1].x)/steps, y: (target[1].y - start[1].y)/steps},
+            {x: (target[2].x - start[2].x)/steps, y: (target[2].y - start[2].y)/steps},
+            {x: (target[3].x - start[3].x)/steps, y: (target[3].y - start[3].y)/steps},
+            {x: (target[4].x - start[4].x)/steps, y: (target[4].y - start[4].y)/steps},
+            {x: (target[5].x - start[5].x)/steps, y: (target[5].y - start[5].y)/steps},
+            {x: (target[6].x - start[6].x)/steps, y: (target[6].y - start[6].y)/steps},
+            {x: (target[7].x - start[7].x)/steps, y: (target[7].y - start[7].y)/steps},
+            {x: (target[8].x - start[8].x)/steps, y: (target[8].y - start[8].y)/steps},
+            {x: (target[9].x - start[9].x)/steps, y: (target[9].y - start[9].y)/steps},
+            {x: (target[10].x - start[10].x)/steps, y: (target[10].y - start[10].y)/steps}]
+
+}
 
 function drawSmoke(){
 
@@ -1377,7 +1565,7 @@ function addRandom(){
 }
 
 function slideR(up){
-    if(!prompt){
+    if(!prompt && step == 0){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
         pops   = new Array(19).fill(0)
@@ -1397,7 +1585,7 @@ function slideR(up){
     }
 }
 function slideG(up){
-    if(!prompt){
+    if(!prompt && step == 0){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
         pops   = new Array(19).fill(0)
@@ -1418,7 +1606,9 @@ function slideG(up){
     }
 }
 function slideB(up){
-    if(!prompt){
+
+    console.log(step)
+    if(!prompt && step == 0){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
         pops   = new Array(19).fill(0)
@@ -1437,49 +1627,6 @@ function slideB(up){
     }
 }
 
-function drawUI(valid){
-
-    var UImidX = canvas2.width - 200
-    var UImidY =  200
-    
-    if(valid){
-    
-        var X1 = UImidX - 15
-        var Y1 = UImidY
-        var X2 = UImidX
-        var Y2 = UImidY + 15
-        var X3 = UImidX + 30
-        var Y3 = UImidY - 30
-        
-        ctx2.moveTo(X1,Y1)
-        ctx2.lineTo(X2,Y2)
-        ctx2.lineTo(X3,Y3)
-        ctx2.lineStyle = 'green'
-        ctx2.stroke()
- 
-    } else {
-    
-        ctx2.clearRect(0,0,canvas2.width,canvas2.height);
-    
-        var X1 = UImidX - 30
-        var Y1 = UImidX + 30
-        var X2 = UImidX + 30
-        var Y2 = UImidX - 30    
-        var X3 = UImidX - 30
-        var Y3 = UImidX - 30
-        var X4 = UImidX + 30
-        var Y4 = UImidX + 30
-        ctx2.moveTo(X1,Y1)
-        ctx2.lineTo(X2,Y2)
-        ctx2.moveTo(X3,Y3)
-        ctx2.lineTo(X4,Y4)
-        ctx2.lineStyle = 'black'
-        ctx2.stroke()
-    }
-    
-    drawStuff()
-    
-}
 
 
 // direction codes :
@@ -1650,11 +1797,15 @@ function handleTouchMove(evt) {
 
 initCanvas()
 
+
+
 for(var i = 0; i < 19; i++){  //posX.length
    
     hexagon(posX[i], posY[i], ctx2, values[i])// + "|" + i.toString()) //values[i])
    
 }
+
+drawBackground()
 
 addRandom()
 addRandom()
