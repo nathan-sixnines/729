@@ -386,7 +386,7 @@ var time = Math.round((new Date()).getTime() / 1000);
 var rand = LCG(time)
 
 var gameRecord = {'time': time,
-                   'moves' = []}
+                   'moves' : []}
 
 // ctx is the context to add the path to
 // points is a array of points [{x :?, y: ?},...
@@ -998,8 +998,7 @@ function drawLoop(){
 
     //console.log("drawstuff"
     
-    //drawBackground(Math.floor(Math.
-	om() * 95))
+    //drawBackground(Math.floor(Math.om() * 95))
     
     if(smoke){
         if(smokeFrame == 10){
