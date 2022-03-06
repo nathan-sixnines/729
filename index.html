@@ -1672,11 +1672,11 @@ function gameOver(){
 
 }
 
-function toClipboard(score){
+function toClipboard(print_score){
 
     text = text_board()
 
-    if(score){
+    if(print_score){
         text +=  "Score: " + score + "\n"      
     } else {
         var runDate = Date.now() - startDate 
