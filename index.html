@@ -867,6 +867,10 @@ var ctx4    = canvas4.getContext("2d");
 
     
     min = width
+    
+    ratio = width / height
+    console.log(ratio)
+    
     if(width+400 > height){
     
         ratio = (width / height) * 2 // seems about right
@@ -935,6 +939,14 @@ var ctx4    = canvas4.getContext("2d");
         
         instructions.top = '80%'
         
+    } else{
+        scale = ratio
+
+        title = document.getElementById('title')
+
+        scale = scale * 10
+        font_s = 17 - scale
+        title.style.fontSize = font_s + "vw"
     }
     
     if(isSafari){
@@ -983,6 +995,9 @@ var ctx4    = canvas4.getContext("2d");
     
     //console.log(posX)
     //console.log(posY)
+
+    console.log(title.style.fontSize)
+
 
 }
 
