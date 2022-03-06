@@ -17,6 +17,7 @@
         <p>Game over! Your score is 0.</p>
     </div>
 <button onclick="newGame()" class="button">New Game</button>
+<button onclick="toClipboard(true)" class="button3">Share (clipboard)</button>
 </div>
 
 <div id ="youWin">
@@ -24,10 +25,11 @@
         <p">You won!</p>
     </div>
 <button onclick="continueGame()" class="contButton">Continue?</button>
+<button onclick="toClipboard(false)" class="button3">Share (clipboard)</button>
 </div>
 
-<div id ="score">
-        <p">Score: </p>
+<div id ="score" onclick="toggleScore()">
+    <p">Score: </p>
 </div>
 
 <button onclick="newGame()" class="button2"> New Game </button>
@@ -101,7 +103,7 @@ body {
   overflow: hidden;
   margin: 0;
   -webkit-overflow-scrolling: auto;
-	font-family: 'nothing_you_could_sayregular';					
+	font-family: 'OmegleRegular';					
 
     //overscroll-behavior: contain;
 
@@ -119,16 +121,17 @@ body {
      position: absolute;
      left: 0;
      top: 0;
-     zindez: 0;
+     z-index: 0;
      width: 100%; 
      height: 100%; 
      overflow: hidden
    }
 #bgtileCanvas { 
+     background-color: #222529;
      position: absolute;
      left: 0;
      top: 0;
-     zindez: -1;
+     z-index: -1;
      width: 100%; 
      height: 100%; 
      overflow: hidden
@@ -148,11 +151,14 @@ body {
     left: 0;
     right: 0;
     margin: 0;//auto;
-    zindez: -2;
-    font-size: 6vw;
+    z-index: 100;
+    font-size: 13vw;
+    color: #D1D2D3;
     display: inline-block;
     vertical-align: middle;
     text-align: center;
+    text-shadow: -4px -4px 0 #000, 4px -4px 0 #000, -4px 4px 0 #000, 4px 4px 0 #000;
+
 }
 #instructions {  
 
@@ -162,6 +168,8 @@ body {
     right: 0;
     margin: auto;
     font-size: 4vw;
+    z-index: 100;
+    color: #D1D2D3;
     display: inline-block;
     vertical-align: middle;
     text-align: center;
@@ -187,7 +195,7 @@ body {
     display: none; 
     
     z-index: 50;
-    background-color:white;
+    background-color:#D1D2D3;
     position: absolute;
     top: 40%;
     left: 20%;
@@ -221,68 +229,86 @@ body {
 }
 .button {  
 
-    border-radius: 1.25vw;
-    border: .5vw solid #000000;
-    padding: 2vw 4vw;
+    border-radius: 2vw;
+    border: 1vw solid #000000;
+    padding: 2vw;
     
     z-index: 50;
-    background-color: #4CAF50; /* Green */
+    background: linear-gradient(to bottom, rgba(140,184,74,1), rgba(112,157,68,1));
     border: none;
-    color: white;
+    color: rgb(40, 40, 40);;
     padding: 2vw;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-family: 'nothing_you_could_sayregular';
+    font-family: 'OmegleRegular';
     font-size: 4vw;
 }
+
 .button2 {  
-    border-radius: 2.5vw;
-    border: .5vw solid #000000;
-    padding: 2vw 4vw;
+    border-radius: 2vw;
+    border: 1vw solid #000000;
+    padding: 2vw;
     
     display: inline-block; 
     
     z-index: 50;
-    color: white;
-    background-color: #4CAF50; /* Green */
+    color: rgb(40, 40, 40);
+    background: linear-gradient(to bottom, rgba(140,184,74,1), rgba(112,157,68,1));
     position: absolute;
     text-decoration: none;
     top: 70%;
     left: 52%;
     right: 5%;
     margin: 2vw;
-    font-family: 'nothing_you_could_sayregular';
+    font-family: 'OmegleRegular';
     font-size: 5.5vw;
     vertical-align: middle;
     text-align: right;
 }
+.button3 {  
+
+    border-radius: 1.5vw;
+    border: 1vw solid #000000;
+    padding: 1.5vw;
+z-index: 50;
+background: linear-gradient(to bottom, rgba(140,184,74,1), rgba(112,157,68,1));
+border: none;
+color: rgb(40, 40, 40);
+padding: 2vw;
+text-align: center;
+text-decoration: none;
+display: inline-block;
+font-family: 'OmegleRegular';
+font-size: 4vw;
+}
 .contButton {  
 
-    border-radius: 1.25vw;
-    border: .5vw solid #000000;
-    padding: 2vw 4vw;
+    border-radius: 2vw;
+    border: 1vw solid #000000;
+    padding: 2vw;
     
     z-index: 50;
-    background-color: #4CAF50; /* Green */
+    background: linear-gradient(to bottom, rgba(140,184,74,1), rgba(112,157,68,1));
     border: none;
-    color: white;
+    color: rgb(40, 40, 40);;
     padding: 2vw;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-family: 'nothing_you_could_sayregular';
+    font-family: 'OmegleRegular';
     font-size: 4vw;
 }
 #score {  
 
-    border-radius: 2.5vw;
-    border: .5vw solid #000000;
+    border-radius: 2vw;
+    border: 1vw solid #000000;
     padding: 2vw;
     
     display: inline-block; 
     
-    background-color:white;
+    z-index: 50;
+    background-color:#D1D2D3;
     position: absolute;
     top: 70%;
     left: 5%;
@@ -490,8 +516,6 @@ function hexagon(x, y, ctx, value){
     if(value != 0){
         fill = true
     }
-    
-    ctx.fillStyle = getColor(value)
    
     ret = offset2(x, y, 0 , circleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
     var cornerX = ret[0]
@@ -502,17 +526,32 @@ function hexagon(x, y, ctx, value){
     //points.push({x: ret[0],y: ret[1]})
     
     //points.push
- 
+
+    var yTop = cornerY
+    var yBot = cornerY - circleSize/2
+
     for(var h = 0; h < 6; h++){
         
         ret = offset2(cornerX, cornerY, directions[h] , circleSize/2)
         cornerX = ret[0]
         cornerY = ret[1]
+
+        //if(cornerY > yTop){yTop = cornerY}
+        //if(cornerY < yTop){yBot = cornerY}
         
         points.push({x: ret[0],y: ret[1]})
         //ctx.fillText("cu"+h,curveX1 , curveY1)
         //ctx.fillText("co"+h,cornerX , cornerY)
     }
+
+    colors = getColor(value)
+
+    var gradient = ctx.createLinearGradient(0,yTop,0,yBot)
+    //gradient.addColorStop(0,"rgba(0,0,0,1)")//colors[0])
+    gradient.addColorStop(0,colors[1])
+    gradient.addColorStop(1,colors[0])
+
+    ctx.fillStyle = gradient
     
     //ctx.fillStyle = 'black'
     
@@ -547,9 +586,9 @@ function hexagon(x, y, ctx, value){
     //}
 
     
-    if(mod(value,2) == 0 && value != 0){
-        ctx.fillStyle = "#000000"
-    }
+    //if(mod(value,2) == 0 && value != 0){
+    //    ctx.fillStyle = "#000000"
+    //}
     
     //console.log(getColor(value))
     //console.log(getColorInv(value))
@@ -557,7 +596,7 @@ function hexagon(x, y, ctx, value){
     if(fill){
         var digits = value.toString().length
     
-        ctx.fillStyle = getColorInv(value); 
+        ctx.fillStyle = getColorInv(value)[0]; 
         
         //https://stackoverflow.com/questions/13771310/center-proportional-font-text-in-an-html5-canvas
         ctx.textBaseline = 'middle';
@@ -565,46 +604,6 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
-}
-
-function getColor(value){
-
-    var fillR = 0
-    var fillG = 0 
-    var fillG = 0 
-
-    if(value % 6 == 0){
-        fillR = mod(value * 50,255)
-    } else {
-        fillG = mod(value * 51,255)
-    }
-    var fillB = mod(value * 61,255)
-    
-    if(value != 0){
-        return "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-    }else {
-        return "rgba(245,245,220, 1)";
-    }
-}
-
-function getColorInv(value){
-
-    var fillR = 0
-    var fillG = 0 
-    var fillG = 0 
-
-    if(value % 6 == 0){
-        fillR = mod(value * 50,255)
-    } else {
-        fillG = mod(value * 51,255)
-    }
-    var fillB = mod(value * 61,255)
-    
-    if(value != 0){
-        return "rgba(" + (255-fillR) + "," + (255-fillG) + "," + (255-fillB) + ", 1)"; 
-    }else {
-        return "rgba(245,245,220, 1)";
-    }
 }
 
 function hexagonOld(x, y, ctx, value){
@@ -794,9 +793,15 @@ var fontSize = circleSize/2.5
 var smoke = false
 var smokeFrame = 0
 
-ctx1.font= fontSize.toString() + 'px nothing_you_could_sayregular';
-ctx2.font= fontSize.toString() + 'px nothing_you_could_sayregular';
-ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
+ctx1.font= fontSize.toString() + 'px OmegleRegular';
+ctx2.font= fontSize.toString() + 'px OmegleRegular';
+ctx3.font= fontSize.toString() + 'px OmegleRegular';
+
+var score      = 0
+var startTime  = 0
+var startDate  = Date.now()
+
+var displayTime = false
 
 var scoreDiv = document.getElementById("score");
 scoreDiv.innerText ="Score: " + score.toString()
@@ -862,7 +867,7 @@ var ctx4    = canvas4.getContext("2d");
 
     
     min = width
-    if(width > height){
+    if(width+400 > height){
     
         ratio = (width / height) * 2 // seems about right
         // elements that need font prop change
@@ -883,6 +888,7 @@ var ctx4    = canvas4.getContext("2d");
         resizes.push(document.getElementById('twitterDesc'))
         resizes.push(document.getElementById('twitlinkPic'))
         resizes.push(document.getElementById('paypalImg'))
+        resizes.push(document.getElementsByClassName('button3')[0])
         
         //console.log(resizes)
         
@@ -913,8 +919,8 @@ var ctx4    = canvas4.getContext("2d");
         scoreStyle.top     = '63%'
         restartStyle.top   = '63%'
         
-        scoreStyle.border    = '.1vw solid #000000'
-        restartStyle.border  = '.1vw solid #000000'
+        scoreStyle.border    = '.2vw solid #000000'
+        restartStyle.border  = '.2vw solid #000000'
         
         twitDesc.left      = '35%'
         twitDesc.top       =  '86%'
@@ -946,9 +952,9 @@ var ctx4    = canvas4.getContext("2d");
     
     fontSize = circleSize/2.5
 
-    ctx1.font= fontSize.toString() + 'px nothing_you_could_sayregular';
-    ctx2.font= fontSize.toString() + 'px nothing_you_could_sayregular';
-    ctx3.font= fontSize.toString() + 'px nothing_you_could_sayregular';
+    ctx1.font= fontSize.toString() + 'px OmegleRegular';
+    ctx2.font= fontSize.toString() + 'px OmegleRegular';
+    ctx3.font= fontSize.toString() + 'px OmegleRegular';
     
     //ctx1.fillStyle = 'black'
     //ctx1.fillRect(drawX,drawY,100,100)
@@ -990,7 +996,139 @@ function hidewideScreenStuff(){
 
 }
 
+function formatTime(obj){
+    var x=[];
+    x.push(obj.m);
+    x.push(obj.s);
+    return x.join(':')
+}
+
 var bgcount = 9999990
+var prevTime  = 0
+var finalTime = -1
+
+function secs2Time(secs) {
+var minutes = Math.floor(secs / 60);
+var seconds = Math.floor(secs % 60);
+var obj = {
+"m": minutes.toString().length === 1 ? '0' + minutes : minutes,
+"s": seconds.toString().length === 1 ? '0' + seconds : seconds
+};
+return obj;
+}
+
+//🟪🟦🟩🟨🟧🟥🟫⬜
+// ⬛🟨🟩
+
+
+function get_square(value){
+    if(value > 729){
+        value = value / 729
+    }
+    var value_chars = {
+        0:"⬛",
+        3:"🟦",
+        9:"🟩",
+        27:"🟨",
+        81:"🟧",
+        243:"🟥",
+        729:"🟪",
+    }
+    return value_chars[value]
+}
+
+function getColor_tup(value){
+
+    if(value > 729){
+        value = value / 729
+    }
+    var value_to_rgb = {
+        0:[[92,92,92],[40,40,40]],
+        3:[[82,159,237],[57,126,213]],
+        9:[[140,184,74],[112,157,68]],
+        27:[[250,227,67],[242,192,57]],
+        81:[[239,157,46],[233,127,45]],
+        243:[[222,72,58],[186,53,47]],
+        729:[[159,75,182],[117,56,147]]
+    }   
+
+    return value_to_rgb[value]
+}
+
+function getColor(value){
+    if(value == 1){value = 0}
+    tuples = getColor_tup(value)
+
+    c1 = tuples[0]
+    c2 = tuples[1]
+
+    c1s = "rgba(" + c1[0] + "," + c1[1] + "," + c1[2] + ", 1)"
+    c2s = "rgba(" + c2[0] + "," + c2[1] + "," + c2[2] + ", 1)"
+
+    return [c1s,c2s]
+}
+
+function getColorInv(value){
+    //if(value == 1){value = 0}
+    //tuples = getColor_tup(value)
+
+    //c1_o = tuples[0] // original color before invert
+    //c2_o = tuples[1]
+
+    //c1 = [255 - c1_o[0], 255- c1_o[1], 255 - c1_o[2] ]  // perform invert
+    //c2 = [255 - c2_o[0], 255- c2_o[1], 255 - c2_o[2] ]
+
+    //c1s = "rgba(" + c1[0] + "," + c1[1] + "," + c1[2] + ", 1)" // color string
+    //c2s = "rgba(" + c2[0] + "," + c2[1] + "," + c2[2] + ", 1)"
+
+    return ["rgba(" + 40 + "," + 40 + "," + 40 + ", 1)"]
+}
+
+
+function text_board(){
+
+    //var colG1  = [10,11,12]
+    //var colG2  = [9,2,3,13]
+    //var colG3 = [8,1,0,4,14]
+    //var colG4  = [7,6,5,15]
+    //var colG5  = [18,17,16]
+
+    var today = new Date();
+    var dd = String(today.getDate()).padStart(2, '0');
+    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = today.getFullYear();
+
+    today = mm + '/' + dd + '/' + yyyy;
+
+    var board_string = "729 - "+ today + "\n      "
+    for (var i = colG1.length-1; i >= 0; i--){
+        board_string += get_square(values[colG1[i]])
+    }
+    board_string += "      \n   "
+    for (var i = colG2.length-1; i >= 0; i--){
+        board_string += get_square(values[colG2[i]])
+    }
+    board_string += "   \n"
+    for (var i = colG3.length-1; i >= 0; i--){
+        board_string += get_square(values[colG3[i]])
+    }
+    board_string += "\n   "
+    for (var i = colG4.length-1; i >= 0; i--){
+        board_string += get_square(values[colG4[i]])
+    }
+    board_string += "   \n      "
+    for (var i = colG5.length-1; i >= 0; i--){
+        board_string += get_square(values[colG5[i]])
+    }
+    board_string += "      \n"
+
+    //console.log(board_string)
+
+
+    return board_string
+
+}
+
 
 var shift = 0
 var shift2 = 0
@@ -1010,6 +1148,21 @@ function drawLoop(){
             smokeFrame += 1
             ctx3.globalAlpha =  1 - (smokeFrame / 10)
         }
+    }
+
+    if(displayTime && ! won){
+        
+        var currentTime = Math.round((new Date()).getTime() / 1000)
+        if(currentTime != prevTime){
+        
+            var scoreDiv = document.getElementById("score");
+            var runDate = Date.now() - startDate 
+            //console.log(runDate)
+            scoreDiv.innerText ="Time: " + formatTime(secs2Time((runDate)/1000))
+            prevTime = currentTime
+            finalTime = runDate
+        }
+
     }
     
     if(update || first){
@@ -1071,10 +1224,13 @@ function drawLoop(){
             }
         }
         
-        if(updateScore){
+        
+        if(!displayTime && (updateScore || toggleScoreFlag)){
 
             var scoreDiv = document.getElementById("score");
             scoreDiv.innerText ="Score: " + score.toString()
+           
+           toggleScoreFlag = false
            
         }
         
@@ -1131,7 +1287,6 @@ function drawLoop(){
                     hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
                 }
             }
-       
         }
     
     }
@@ -1197,6 +1352,16 @@ var pastels2 =  ['#b3b3b3', '#dfdfdf', '#ffffff', '#c9c9c9', '#8a8a8a']
 //console.log({deltaCount:0,end: Math.floor(Math.random() * 3000)})
 //console.log(Math.floor(Math.random() * 3000))
 //console.log((Math.random() * 3000))
+
+var toggleScoreFlag = false
+
+function toggleScore(){
+
+    console.log(displayTime)
+
+    displayTime = ! displayTime
+    toggleScoreFlag = true
+}
 
 function drawBackground(shape){
 
@@ -1389,8 +1554,8 @@ function drawSmoke(){
             if(pops[i] == 1){
                 particleList = []
                 
-                var color = getColor(values[i])
-                var color2 = getColor(values[i]/3)
+                var color = getColor(values[i])[0]
+                var color2 = getColor(values[i]/3)[0]
                 for(var j = 0; j < 40; j++){
                 
                     particleList.push(new Particle( posX[i] + ((Math.random() -.5) *circleSize),
@@ -1490,6 +1655,23 @@ function gameOver(){
     innerDiv.innerText ="Game over! Your score is "+ score.toString() + "."
     overDiv.style.display = 'inline-block'
 
+}
+
+function toClipboard(score){
+
+    text = text_board()
+
+    if(score){
+        text +=  "Score: " + score + "\n"      
+    } else {
+        var runDate = Date.now() - startDate 
+        text += "Time: " + formatTime(secs2Time((runDate)/1000)) + "\n"
+    }
+
+    text += "https://nathan-sixnines.github.io/729"
+
+    navigator.clipboard.writeText(text)
+    setTimeout(function() { alert('Copied to clipboard'); }, 1);
 }
 
 function newGame(){
