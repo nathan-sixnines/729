@@ -509,6 +509,82 @@ function roundedPoly(ctx, points, radiusAll) {
   ctx.closePath();
 }
 
+
+
+function draw_arrow(x, y, direction, ctx){
+
+    var points = []
+
+    var angle_primary_1 = angles[direction] + slice
+    var angle_orthoginal_1 = angle_primary_1 + (Math.PI /2)
+    var angle_primary_2 = angle_primary_1 + Math.PI
+    var angle_orthoginal_2 = angle_orthoginal_1 + Math.PI
+    var angle_slant_1 = angle_primary_2 + Math.PI / 4
+    var angle_slant_2 = angle_primary_2 - Math.PI / 4
+
+    console.log(angle_primary_1)
+    console.log(angle_orthoginal_1)
+    console.log(angle_primary_2)
+    console.log(angle_orthoginal_2)
+
+    ret = offsetExact2(x,y, angle_primary_2, circleSize/16)
+    var firstX = ret[0]
+    var firstY = ret[1]
+
+    ret = offsetExact2(firstX,firstY, angle_orthoginal_1, circleSize/16)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(cornerX,cornerY, angle_primary_1, circleSize/4)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(cornerX,cornerY, angle_orthoginal_2, circleSize/8)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(cornerX,cornerY, angle_primary_2, circleSize/4)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(cornerX,cornerY, angle_orthoginal_2, circleSize/8)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(x,y, angle_primary_2, circleSize/4)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+    ret = offsetExact2(firstX,firstY, angle_orthoginal_1, 3*circleSize/16)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: ret[0],y: ret[1]})
+
+    ctx.strokeStyle = 'black'
+    
+    if(isSafari){
+        ctx.lineWidth = 1
+        
+        if(value != 0){
+            ctx.lineWidth += 2
+        }
+    } else {
+        ctx.lineWidth = 3
+        
+    
+    }
+    ctx.beginPath()
+
+    console.log(points)
+
+    roundedPoly(ctx, points, circleSize/24)
+
+    ctx.stroke()
+
+
+}
+
+g_count = 0
 function hexagon(x, y, ctx, value){
    
     var fill = false
@@ -604,6 +680,10 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
+
+   draw_arrow(x,y, mod(g_count,6), ctx)
+   g_count += 1
+
 }
 
 function hexagonOld(x, y, ctx, value){
@@ -745,6 +825,13 @@ function offset2(x, y, angle, factor){
 function offsetExact(x, y, angle, factor){
     retX = x + (Math.sin(angle + slice)) * factor
     retY = y + (Math.cos(angle + slice)) * factor
+    
+    return [retX,retY]
+}
+// this one uses the angle in radians instead of a lookup index
+function offsetExact2(x, y, angle, factor){
+    retX = x + (Math.sin(angle)) * factor
+    retY = y + (Math.cos(angle)) * factor
     
     return [retX,retY]
 }
@@ -1844,6 +1931,13 @@ function slideCol(col, up){
     else {
         return 0
     }
+}
+
+
+function ghostArrows(direction){
+
+    
+
 }
 
 function addRandom(){
