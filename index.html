@@ -1964,7 +1964,7 @@ function checkCol(col){
             maxCount = count
         }
         
-        if(count == 3){
+        if(count >= 3){
             slide = true
             gaps.push(i-2)
             gaps.push(i)
@@ -2500,8 +2500,10 @@ for(var i = 0; i < 19; i++){  //posX.length
 
 //addRandom()
 nextValues[12] = 3
-nextValues[11] = 3
-nextValues[10] = 3
+nextValues[3] = 3
+nextValues[0] = 3
+nextValues[6] = 3
+nextValues[18] = 3
 addRandom()
 
 //nextValues[0] = 1
