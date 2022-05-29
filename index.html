@@ -565,7 +565,7 @@ function draw_arrow(x, y, direction, ctx){
     var cornerY = ret[1]
     points.push({x: cornerX,y: cornerY})
 
-    ah2 = arrow_hint_intensity_2
+    ah2 = arrow_hint_intensity_2 * .6
     ctx.strokeStyle = 'black'
     //if(isSafari){
     //    ctx.lineWidth = 1
@@ -1669,7 +1669,7 @@ function drawBackground(shape){
         
             ctx4.beginPath()
             
-            roundedPoly(ctx4, currentPos, circleSize/20)
+            roundedPoly(ctx1, currentPos, circleSize/20)
             
             ctx4.fillStyle = bgColors[i]
             ctx4.fill()
@@ -1938,28 +1938,44 @@ function newGame(){
 
 function checkCol(col){
 
-    var check = 0
+    var check = -1
     var count = 0
     
     var maxCount = 0
 
     var slide = false
     // [slide, first_gap, last_gap]
-    var gaps = [] 
+    var min = 999
+    var max = -999
     var pos = null
+    var first_zero = null
+    debug = false
+
+
+    s = ""
+    for(var i =0; i < col.length; i++){
+        s += " " +  values[col[i]]
+    }
+    console.log(s)
+
+    if(values[col[0]] != 0){
+        console.log(values[col[0]])
+        debug = true
+    }
 
     for(var i = 0; i < col.length; i++){
         var val = values[col[i]]
         if(val == 0){
             slide = true
-            gaps.push(i)
+            if(i < min){min = i}
+            if(i > max){max = i}
         }
-        if(val == check){
+        else if(val == check){
             count += 1
-            pos = i
         } else {
             count = 1
             check = val
+            pos = i
         }
         
         if(count > maxCount){
@@ -1968,11 +1984,18 @@ function checkCol(col){
         
         if(count >= 3){
             slide = true
-            gaps.push(pos)
-            gaps.push(i)
+            console.log("row")
+            console.log(pos)
+            console.log(i)
+            if(pos < min){min = pos}
+            if(i > max){max = i}
         }
     }
-    ret = [slide, gaps[0],gaps[gaps.length-1]]
+    //ret = [slide, Math.min(gaps[0],slides[0]),Math.max(gaps[gaps.length-1],slides[slides.length-1])]
+    ret = [slide, min,max]
+    if(debug){
+        console.log(ret)
+    }
     return ret
 }
 
@@ -2268,8 +2291,6 @@ var critical = false
 
 //direction_select = -1
 //arrow_hint_intensity = 0
-indicator_color = 0
-
 
 
 
@@ -2277,29 +2298,19 @@ function handle_input(startX, startY, newX, newY){
 
     var distance = Math.sqrt(Math.pow(newX - startX,2) + Math.pow(newY - startY,2))
 
-    var unit = height / 100
+    var unit = height / 500
 
     //console.log(distance)
 
-    if( distance < unit * 8){
+    var xDiff =  newX - startX
+    var yDiff =  newY - startY 
 
-        arrow_hint_intensity_2 = 0
-        indicator_color = 0                
+    var rad = (Math.atan2(yDiff, xDiff) / Math.PI) + 1;
+    bin_rad_ret = bin_rad(rad)
 
-        //console.log("move case 1")
+    if( distance < unit * 16){
 
-        var xDiff =  newX - startX
-        var yDiff =  newY - startY 
-
-        ctx1.strokeStyle = 'blue'
-        ctx1.beginPath();
-        ctx1.arc(startX + xDiff, startY + yDiff, 5, 0, 2 * Math.PI);
-        ctx1.stroke();
-        
-        var rad = (Math.atan2(yDiff, xDiff) / Math.PI) + 1;
-        
-        bin_rad_ret = bin_rad(rad)
-
+        arrow_hint_intensity_2 = 0   
         direction_select = bin_rad_ret[0]
         arrow_hint_intensity = bin_rad_ret[1]
         update = true
@@ -2308,25 +2319,48 @@ function handle_input(startX, startY, newX, newY){
     }
     if(distance >= unit * 8 && distance < (unit * 16)){
 
-        arrow_hint_intensity_2 = (distance - unit * 8) / (unit * 8)
 
-        ctx1.strokeStyle = 'red'
-        ctx1.beginPath();
-        ctx1.arc(newX, newY, 5, 0, 2 * Math.PI);
-        ctx1.stroke();
 
-        indicator_color = 255
-
+        arrow_hint_intensity_2 = 0   
+        direction_select = bin_rad_ret[0]
+        arrow_hint_intensity = bin_rad_ret[1]
         update = true
         critical = false
+
+
+        //direction_select = bin_rad_ret[0]
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //arrow_hint_intensity_2 = (distance - unit * 4) / (unit * 8)
+
+        //update = true
+        //critical = false
 
         //console.log("move case 2")
 
     }
+    // don't set critical if not clearly in direction?
     else if(distance >= (unit * 16)){
 
-        indicator_color = 255
-        critical = true
+
+        arrow_hint_intensity_2 = 0   
+        direction_select = bin_rad_ret[0]
+
+        update = true
+        //console.log(bin_rad_ret)
+        if(bin_rad_ret[1] < .25){
+            critical = false
+            arrow_hint_intensity = bin_rad_ret[1] * 4
+        }else if(bin_rad_ret[1] > .25){
+            critical = true
+            arrow_hint_intensity_2 = 1
+        }
+
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //direction_select = bin_rad_ret[0]
+        //arrow_hint_intensity_2 = 1
+        //critical = true
+        //update = true
     }
 
 }
@@ -2507,15 +2541,10 @@ for(var i = 0; i < 19; i++){  //posX.length
    
 }
 
-//drawBackground()
+drawBackground()
 
-//addRandom()
-nextValues[11] = 3
-nextValues[3] = 3
-nextValues[15] = 3
-//nextValues[6] = 3
-//nextValues[18] = 3
-//addRandom()
+addRandom()
+addRandom()
 
 //nextValues[0] = 1
 //nextValues[1] = 2
