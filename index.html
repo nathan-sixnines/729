@@ -358,8 +358,18 @@ function mod(n, m) {
         return ((n % m) + m) % m;
 }
 
+// colR1, colR2, colR3, colR4, colR5, colG1, colG2, colG3, colG4, colG5, colB1, colB2, colB3, colB4, colB5
+// R is E-Z direction, smaller values E, larger values Z
+// G is A-D direction, smaller values D, larger values A
+// B is W-X direction, smaller values X, larger values W
+
+// need to get cols depending on direction
 
 var count = 0 
+
+
+// case 0 [7, 1, 2, 11]] ( this isn't right )  (direction W)
+// postion 15, col G2 coming up
 
 var colR1  = [12,13,14]
 var colR2  = [11,3,4,15]
@@ -378,6 +388,12 @@ var colB2  = [7,1,2,11]
 var colB3 = [18,6,0,3,12]
 var colB4  = [17,5,4,13]
 var colB5  = [16,15,14]
+
+var e_z_cols = [[colR3,2],[colR4,3],[colR3,2],[colR2,1],[colR2,1],[colR3,2],[colR4,3],[colR5,4],[colR5,4],[colR4,3],[colR3,2],[colR2,1],[colR1,0],[colR1,0],[colR1,0],[colR2,1],[colR3,2],[colR4,3],[colR5,4]]
+var a_d_cols = [[colG3,2],[colG3,2],[colG2,1],[colG2,1],[colG3,2],[colG4,3],[colG4,3],[colG4,3],[colG3,2],[colG2,1],[colG1,0],[colG1,0],[colG1,0],[colG2,1],[colG3,2],[colG4,3],[colG5,4],[colG5,4],[colG5,4]]
+var w_x_cols = [[colB3,2],[colB2,1],[colB2,1],[colB3,2],[colB4,3],[colB4,3],[colB3,2],[colB2,1],[colB1,0],[colB1,0],[colB1,0],[colB2,1],[colB3,2],[colB4,3],[colB5,4],[colB5,4],[colB5,4],[colB4,3],[colB3,2]]
+
+
 
 var colList = [] 
 
@@ -509,6 +525,68 @@ function roundedPoly(ctx, points, radiusAll) {
   ctx.closePath();
 }
 
+
+var direction_select = -1
+var arrow_hint_intensity = 0
+var arrow_hint_intensity_2 = 0
+
+
+
+
+function draw_arrow(x, y, direction, ctx){
+
+    unfuck_arrow_list = [4,3,2,1,0,5] // I think because I already hardcoded something else, now I just need to hardcode this, or unhardcode the other thing first
+
+    direction = unfuck_arrow_list[direction]
+
+    //console.log("arrow:" + (mod((angles[direction] + slice),2*Math.PI)))
+
+    var points = []
+
+    var size = .01 + circleSize * Math.max(arrow_hint_intensity,arrow_hint_intensity_2)
+    //console.log(direction)
+    //console.log(size)
+
+    var angle_primary = angles[direction] - slice
+    var angle_slant_1 = angle_primary - Math.PI/2 - Math.PI/8
+    var angle_slant_2 = angle_primary + Math.PI/2 + Math.PI/8
+
+
+    ret = offsetExact2(x,y, angle_primary, size/6 + circleSize/6)
+    var firstX = ret[0]
+    var firstY = ret[1]
+    points.push({x: firstX,y: firstY})
+    ret = offsetExact2(firstX,firstY, angle_slant_1, 2*size/8)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: cornerX,y: cornerY})
+    ret = offsetExact2(firstX,firstY, angle_slant_2, 2*size/8)
+    var cornerX = ret[0]
+    var cornerY = ret[1]
+    points.push({x: cornerX,y: cornerY})
+
+    ah2 = arrow_hint_intensity_2 * .6
+    ctx.strokeStyle = 'black'
+    //if(isSafari){
+    //    ctx.lineWidth = 1
+    //    if(value != 0){
+    //        ctx.lineWidth += 2
+    //    }
+    //} else {
+    //    ctx.lineWidth = 3
+    //}
+    ctx.beginPath()
+    //console.log(points)
+    roundedPoly(ctx, points, size/64)
+    ctx.stroke()
+    //console.log('hsl(60,'+(50+ah2)+'%,'+(ah2*2)+'%)')
+    if(arrow_hint_intensity_2 > 0){
+        ctx.fillStyle = 'hsl(60,'+(50+ah2*50)+'%,'+(ah2*100)+'%)'
+        ctx.fill()
+    }
+
+}
+
 function hexagon(x, y, ctx, value){
    
     var fill = false
@@ -604,116 +682,7 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
-}
 
-function hexagonOld(x, y, ctx, value){
-   
-    var fill = false
-    
-    //console.log(fill)
-    //console.log(x)
-    //console.log(y)
-
-    var fillG = 0
-    var fillR = 0
-    if(value % 6 == 0){
-        fillR = mod(value * 50,255)
-    } else {
-    
-        fillG = mod(value * 51,255)
-    }
-
-    var fillB = mod(value * 61,255)//Math.floor(mod((value / 81) * 255,255))
-   
-    if(value != 0){
-    
-        fill = true
-        ctx.fillStyle = "rgba(" +fillR + "," +fillG + "," +fillB + ", 1)"; 
-    }else {
-    
-        ctx.fillStyle = "rgba(245,245,220, 1)";
-    
-    }
-   
-    //console.log(fillB)
-   
-    // this is more complicated now because of curved corners
-    // if you want to see how the basic version works look at the old function
-   
-    var radius = circleSize /10
-   
-    ctx.beginPath()
-    ret = offset2(x, y, 0 , circleSize/2)  // starting from angle 4 makes the hexagon in the proper place (I think)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    ret = offset2(cornerX, cornerY, 4 , circleSize/10)
-    var curveX1 = ret[0]
-    var curveY1 = ret[1]
-    //ctx.fillText("cu1",curveX1 , curveY1)
-    //ctx.fillText("co1",cornerX , cornerY)
-    
-    var arcRets = []
-    
-    ctx.moveTo(curveX1, curveY1)
-    for(var h = 0; h < 6; h++){
-        
-        ret = offset2(cornerX, cornerY, directions[h] , circleSize/10)
-        curveX2 = ret[0]
-        curveY2 = ret[1]
-        //ctx.fillText("cu"+h,curveX2 , curveY2)
-        //ctx.quadraticCurveTo(cornerX,cornerY, curveX2,curveY2)
-        ctx.lineTo(curveX2,curveY2)
-        
-        arcRets.push(towards(cornerX,cornerY,x,y,radius+2))
-       
-        ret = offset2(cornerX, cornerY, directions[h] , circleSize*4/10)
-        curveX1 = ret[0]
-        curveY1 = ret[1]
-        ctx.lineTo(curveX1,curveY1)
-        ret = offset2(cornerX, cornerY, directions[h] , circleSize/2)
-        cornerX = ret[0]
-        cornerY = ret[1]
-        //ctx.fillText("cu"+h,curveX1 , curveY1)
-        //ctx.fillText("co"+h,cornerX , cornerY)
-    }
-    
-    var colorString = "rgb("+fillR+ "," + fillG + "," + fillB +")"
-    
-    ret = offset2(cornerX, cornerY, directions[h] , circleSize/20)
-    curveX2 = ret[0]
-    curveY2 = ret[1]
-    
-    //ctx.quadraticCurveTo(cornerX,cornerY, curveX2,curveY2)
-    ctx.closePath()
-    
-
-    //console.log(ctx.fillStyle)
-    ctx.fill()
-    
-    if(mod(value,2) == 0 && value != 0){
-        ctx.fillStyle = "#000000"
-    }
-    
-    for(var h = 0; h < 6; h++){
-        ctx.beginPath()
-        ctx.arc(arcRets[h][0], arcRets[h][1], radius, 0,6.3)
-        ctx.closePath()
-        ctx.fill()
-        //ctx.stroke()
-    }
-    
-    
-    if(fill){
-        var digits = value.toString().length
-    
-        ctx.fillStyle = "rgba(" + (255-fillR) + "," +(255-fillG) + "," +(255-fillB) + ", 1)"; 
-        
-        //https://stackoverflow.com/questions/13771310/center-proportional-font-text-in-an-html5-canvas
-        ctx.textBaseline = 'middle';
-        ctx.textAlign = "center";
-        ctx.fillText(value.toString(), x , y )
-    }
-   //ctx.stroke()
 }
 
 function towards(x1,y1,x2,y2,distance){
@@ -745,6 +714,13 @@ function offset2(x, y, angle, factor){
 function offsetExact(x, y, angle, factor){
     retX = x + (Math.sin(angle + slice)) * factor
     retY = y + (Math.cos(angle + slice)) * factor
+    
+    return [retX,retY]
+}
+// this one uses the angle in radians instead of a lookup index
+function offsetExact2(x, y, angle, factor){
+    retX = x + (Math.sin(angle)) * factor
+    retY = y + (Math.cos(angle)) * factor
     
     return [retX,retY]
 }
@@ -869,7 +845,7 @@ var ctx4    = canvas4.getContext("2d");
     min = width
     
     ratio = width / height
-    console.log(ratio)
+    //console.log(ratio)
     
     if(width+400 > height){
     
@@ -996,7 +972,7 @@ var ctx4    = canvas4.getContext("2d");
     //console.log(posX)
     //console.log(posY)
 
-    console.log(title.style.fontSize)
+    //console.log(title.style.fontSize)
 
 
 }
@@ -1007,7 +983,7 @@ function hidewideScreenStuff(){
         
         wideScreen_instruct.style.display = 'none'
         
-        console.log(wideScreen_instruct.style)
+        //console.log(wideScreen_instruct.style)
 
 }
 
@@ -1147,6 +1123,17 @@ function text_board(){
 
 var shift = 0
 var shift2 = 0
+
+function get_current_col_pos(index,col){
+
+    for(var i = 1; i < col.length; i++){
+        if (col[i] == index){
+            return i
+        }
+    }
+    return -1
+}
+
 function drawLoop(){
 
     //console.log("drawstuff"
@@ -1180,7 +1167,7 @@ function drawLoop(){
 
     }
     
-    if(update || first){
+    if(update ){
     
         ctx1.clearRect(0,0,canvas1.width,canvas1.height)
         ctx1.fillStyle='black'
@@ -1215,9 +1202,9 @@ function drawLoop(){
                 }
             }
             
-            if(next){
-                actionByKeyCode(next)
-            }
+            //if(next){
+            //    actionByKeyCode(next)
+            //}
             
             actionQueue = [] // maybe just queueing 1 is better
             
@@ -1258,16 +1245,16 @@ function drawLoop(){
         
         var gameOverBool = false
         
-        if(zeros == 0){
+        //if(zeros == 0){
         
-            if(checkGameOver()){
-            
-                first  = false   // this won't ever matter in practice but helps development
-                prompt = true
-                update = false
-                gameOver()
-            }
+        if(checkGameOver()){
+        
+            first  = false   // this won't ever matter in practice but helps development
+            prompt = true
+            update = false
+            gameOver()
         }
+        //}
         
         if(slide){
                 //for(var i = 1; i < 19; i++){  //posX.length
@@ -1290,16 +1277,82 @@ function drawLoop(){
                                 slideStartY[i] + deltaY[i] * step,
                                 ctx1,
                                 slideValue[i])
-                            
                     }
                 }
                 
-                step = step + 1 // I like this better than ++ now. You can tell at a glance it's doing assignment
+                step = step + 1
         } else {
             update = false
             for(var i = 0; i < 19; i++){  //posX.length
                 if(values[i] != 0){
                     hexagon(posX[i], posY[i], ctx1, values[i])// + "|" + i.toString()) //values[i])
+                    // colR1, colR2, colR3, colR4, colR5, colG1, colG2, colG3, colG4, colG5, colB1, colB2, colB3, colB4, colB5
+
+                    //R  1,4   var e_z_cols 
+                    //G  5,2   var a_d_cols 
+                    //B  0,3   var w_x_cols
+                    
+                    if(direction_select == 1){
+                        //R  1,4   var e_z_cols
+                        ret = e_z_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_r[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp > possible[1]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
+                    if(direction_select == 4){
+                        //R  1,4   var e_z_cols
+                        ret = e_z_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_r[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp < possible[2]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
+                    if(direction_select == 5){
+                        //G  5,2   var a_d_cols 
+                        ret = a_d_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_g[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp < possible[2]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
+                    if(direction_select == 2){
+                        //G  5,2   var a_d_cols 
+                        ret = a_d_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_g[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp > possible[1]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
+                    // case 0 [9, 2, 3, 13] ( this isn't right )  (direction W)
+                    if(direction_select == 0){
+                        //B  0,3   var w_x_cols
+                        ret = w_x_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_b[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp < possible[2]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
+                    if(direction_select == 3){
+                        //B  0,3   var w_x_cols
+                        ret = w_x_cols[i]
+                        col = ret[0]
+                        possible = possible_slides_b[ret[1]]
+                        ccp = get_current_col_pos(i, col)
+                        if(ccp > possible[1]){
+                            draw_arrow(posX[i], posY[i], direction_select, ctx1)
+                        }
+                    }
                 }
             }
         }
@@ -1372,7 +1425,7 @@ var toggleScoreFlag = false
 
 function toggleScore(){
 
-    console.log(displayTime)
+    //console.log(displayTime)
 
     displayTime = ! displayTime
     toggleScoreFlag = true
@@ -1493,7 +1546,7 @@ function drawBackground(shape){
         
             ctx4.beginPath()
             
-            roundedPoly(ctx4, currentPos, circleSize/20)
+            roundedPoly(ctx1, currentPos, circleSize/20)
             
             ctx4.fillStyle = bgColors[i]
             ctx4.fill()
@@ -1616,28 +1669,74 @@ function drawSmoke(){
 
 }
 
+// colR1, colR2, colR3, colR4, colR5, colG1, colG2, colG3, colG4, colG5, colB1, colB2, colB3, colB4, colB5
+// R is E-Z direction, smaller values E, larger values Z
+// G is A-D direction, smaller values D, larger values A
+// B is W-X direction, smaller values X, larger values W
+
+var possible_slides_r = []
+var possible_slides_g = []
+var possible_slides_b = []
+
 function checkGameOver(){
     
     var slide = 0
-  
-    slide += checkCol(colR1)
-    slide += checkCol(colR2)
-    slide += checkCol(colR3)
-    slide += checkCol(colR4)
-    slide += checkCol(colR5)
-    slide += checkCol(colG1)
-    slide += checkCol(colG2)
-    slide += checkCol(colG3)
-    slide += checkCol(colG4)
-    slide += checkCol(colG5)
-    slide += checkCol(colB1)
-    slide += checkCol(colB2)
-    slide += checkCol(colB3)
-    slide += checkCol(colB4)
-    slide += checkCol(colB5)
+    possible_slides_r = []
+    possible_slides_g = []
+    possible_slides_b = []
+
+    ret = checkCol(colR1)
+    slide += ret[0]
+    possible_slides_r.push(ret)
+    ret = checkCol(colR2)
+    slide += ret[0]
+    possible_slides_r.push(ret)
+    ret = checkCol(colR3)
+    slide += ret[0]
+    possible_slides_r.push(ret)
+    ret = checkCol(colR4)
+    slide += ret[0]
+    possible_slides_r.push(ret)
+    ret = checkCol(colR5)
+    slide += ret[0]
+    possible_slides_r.push(ret)
+
+    ret = checkCol(colG1)
+    slide += ret[0]
+    possible_slides_g.push(ret)
+    ret = checkCol(colG2)
+    slide += ret[0]
+    possible_slides_g.push(ret)
+    ret = checkCol(colG3)
+    slide += ret[0]
+    possible_slides_g.push(ret)
+    ret = checkCol(colG4)
+    slide += ret[0]
+    possible_slides_g.push(ret)
+    ret = checkCol(colG5)
+    slide += ret[0]
+    possible_slides_g.push(ret)
+
+    ret = checkCol(colB1)
+    slide += ret[0]
+    possible_slides_b.push(ret)
+    ret = checkCol(colB2)
+    slide += ret[0]
+    possible_slides_b.push(ret)
+    ret = checkCol(colB3)
+    slide += ret[0]
+    possible_slides_b.push(ret)
+    ret = checkCol(colB4)
+    slide += ret[0]
+    possible_slides_b.push(ret)
+    ret = checkCol(colB5)
+    slide += ret[0]
+    possible_slides_b.push(ret)
     
     //console.log("slide from checklose:" + slide.toString())
     
+    //console.log(slide)
+
     if(slide){
         return false
     } else {
@@ -1696,10 +1795,11 @@ function newGame(){
     nextValues.fill(0)
     
     score = 0
+    startDate  = Date.now()
     
     ctx4.clearRect(0,0,width,height)
     
-    addRandom()
+    //addRandom()
     addRandom()
     
     values = nextValues.slice()
@@ -1716,32 +1816,65 @@ function newGame(){
 
 function checkCol(col){
 
-    var check = 0
+    var check = -1
     var count = 0
     
     var maxCount = 0
-    
+
+    var slide = false
+    // [slide, first_gap, last_gap]
+    var min = 999
+    var max = -999
+    var pos = null
+    var first_zero = null
+    debug = false
+
+
+    s = ""
+    for(var i =0; i < col.length; i++){
+        s += " " +  values[col[i]]
+    }
+    //console.log(s)
+
+    if(values[col[0]] != 0){
+        //console.log(values[col[0]])
+        debug = true
+    }
+
     for(var i = 0; i < col.length; i++){
         var val = values[col[i]]
-        
-        if(val == check){
+        if(val == 0){
+            slide = true
+            if(i < min){min = i}
+            if(i > max){max = i}
+        }
+        else if(val == check){
             count += 1
         } else {
             count = 1
             check = val
+            pos = i
         }
         
         if(count > maxCount){
-        
             maxCount = count
-        
         }
         
-        if(count == 3){
-            return true
+        if(count >= 3){
+            slide = true
+            //console.log("row")
+            //console.log(pos)
+            //console.log(i)
+            if(pos < min){min = pos}
+            if(i > max){max = i}
         }
     }
-    return false
+    //ret = [slide, Math.min(gaps[0],slides[0]),Math.max(gaps[gaps.length-1],slides[slides.length-1])]
+    ret = [slide, min,max]
+    if(debug){
+        //console.log(ret)
+    }
+    return ret
 }
 
 function slideCol(col, up){
@@ -1935,6 +2068,7 @@ function slideB(up){
 
 
 
+// I don't think this is right anymore but might be useful forensics:
 // direction codes :
 // up right   = 0   
 // up left    = 1
@@ -2024,48 +2158,100 @@ document.getElementById("container").addEventListener('mousemove', mouseMove, fa
 var click = false
 var xDownClick = null;                                                        
 var yDownClick = null;
+var critical = false
 
-function handleClickDown(evt){
+//direction_select = -1
+//arrow_hint_intensity = 0
 
-    xDownClick = evt.pageX - canvas1.offsetLeft;
-    yDownClick = evt.pageY - canvas1.offsetTop;
-    click = true
 
-}
 
-function handleClickUp(evt){
-    click = false  
-}
+function handle_input(startX, startY, newX, newY){
 
-function mouseMove(evt){
-    if(click){
-        x2 = evt.pageX - canvas1.offsetLeft;
-        y2 = evt.pageY - canvas1.offsetTop;
+    var distance = Math.sqrt(Math.pow(newX - startX,2) + Math.pow(newY - startY,2))
 
-        var distance = Math.sqrt(Math.pow(x2 - xDownClick,2) + Math.pow(y2 - yDownClick,2))
-        if( distance > height /20){
-        
-            var xDiff =  xDownClick - x2
-            var yDiff =  yDownClick - y2
-            
-            diffSwipe(xDiff,yDiff)
-            
-            click = false
-            xDownClick = null;                                                        
-            yDownClick = null;
-        }
+    var unit = height / 500
+
+    //console.log(distance)
+
+    var xDiff =  newX - startX
+    var yDiff =  newY - startY 
+
+    var rad = (Math.atan2(yDiff, xDiff) / Math.PI) + 1;
+    bin_rad_ret = bin_rad(rad)
+
+    if( distance < unit * 12){
+
+        arrow_hint_intensity_2 = 0   
+        direction_select = bin_rad_ret[0]
+        arrow_hint_intensity = bin_rad_ret[1]
+        update = true
+        critical = false
+
     }
+    if(distance >= unit * 12 && distance < (unit * 16)){
+
+
+
+        arrow_hint_intensity_2 = 0   
+        direction_select = bin_rad_ret[0]
+        if(bin_rad_ret[1] < .5){
+            arrow_hint_intensity = bin_rad_ret[1] *2
+        }else{
+            arrow_hint_intensity = 1
+        }
+        update = true
+        critical = false
+
+
+        //direction_select = bin_rad_ret[0]
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //arrow_hint_intensity_2 = (distance - unit * 4) / (unit * 8)
+
+        //update = true
+        //critical = false
+
+        //console.log("move case 2")
+
+    }
+    // don't set critical if not clearly in direction?
+    else if(distance >= (unit * 16)){
+
+
+        arrow_hint_intensity_2 = 0   
+        direction_select = bin_rad_ret[0]
+
+        update = true
+        //console.log(bin_rad_ret)
+        if(bin_rad_ret[1] < .25){
+            critical = false
+            arrow_hint_intensity = bin_rad_ret[1] * 4
+        }else if(bin_rad_ret[1] > .25){
+            critical = true
+            arrow_hint_intensity = 1
+            arrow_hint_intensity_2 = 1
+        }
+
+        //arrow_hint_intensity = bin_rad_ret[1]
+        //direction_select = bin_rad_ret[0]
+        //arrow_hint_intensity_2 = 1
+        //critical = true
+        //update = true
+    }
+
 }
+
+
 
 document.addEventListener('touchstart', handleTouchStart, false);        
-
+document.addEventListener('touchend', handleTouchEnd)
 document.addEventListener('touchmove', function(evt) {
     // I hate safari
-    var userAgent = window.navigator.userAgent;
-    var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
-    if (isSafari){
-        evt.preventDefault();
-    }
+    //var userAgent = window.navigator.userAgent;
+    //var isSafari = (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i))
+    //if (isSafari){
+    //    evt.preventDefault();
+    //}
     handleTouchMove(evt)
 })
 
@@ -2073,77 +2259,147 @@ document.addEventListener('touchmove', function(evt) {
 
 document.addEventListener("resize", initCanvas);
 
-var xDown = null;                                                        
-var yDown = null;
+function handleClickUp(evt){
+    handle_end()
+}
 
-function getTouches(evt) {
-  return evt.touches ||             // browser API
-         evt.originalEvent.touches; // jQuery
-}                                                     
+function handleTouchEnd(evt){
+    handle_end()
+}
 
-function handleTouchStart(evt) {                                         
-    xDown = getTouches(evt)[0].clientX;                                      
-    yDown = getTouches(evt)[0].clientY;                                      
-};                                                
+function handle_end(){
+    if(critical){
+        slideSelect(direction_select)
+    }
+    click = false
+    xDownClick = null
+    yDownClick = null
+    direction_select = -1
+    update = true
+}
 
 function handleTouchMove(evt) {
 
-    if ( ! xDown || ! yDown ) {
-        return;
+    if(click){
+
+        var newX = evt.touches[0].clientX;                                    
+        var newY = evt.touches[0].clientY;
+
+        handle_input(xDownClick, yDownClick,newX,newY)
+        
+        // reset values 
+        //xDown = null;
+        //yDown = null;    
+    }                                         
+}
+
+function getTouches(evt) {
+  return evt.touches ||             // browser API
+         evt.originalEvent.touches  // jQuery
+}                                                     
+
+function handleTouchStart(evt) {                                         
+    xDownClick = getTouches(evt)[0].clientX                               
+    yDownClick = getTouches(evt)[0].clientY
+    click = true                                    
+}
+
+function handleClickDown(evt){
+
+xDownClick = evt.pageX - canvas1.offsetLeft;
+yDownClick = evt.pageY - canvas1.offsetTop;
+click = true
+
+//ctx1.beginPath();
+//ctx1.arc(xDownClick, yDownClick, 15, 0, 2 * Math.PI);
+//ctx1.stroke();
+
+}
+
+
+function mouseMove(evt){
+    if(click){
+        x2 = evt.pageX - canvas1.offsetLeft
+        y2 = evt.pageY - canvas1.offsetTop
+        handle_input(xDownClick, yDownClick,x2,y2)
+
     }
+}
 
-    var xUp = evt.touches[0].clientX;                                    
-    var yUp = evt.touches[0].clientY;
 
-    var xDiff = xDown - xUp;  // Think this is actually backwards but I fixed it to work on the other side
-    var yDiff = yDown - yUp;    
-    
-    diffSwipe(xDiff, yDiff)
-    
-    /* reset values */
-    xDown = null;
-    yDown = null;                                             
-};
+function sector_alignment(a,b){
+    c = Math.abs(a-b)
+    d = 1/6 - c
+    d = d * 6
+    return d
+}
 
-function diffSwipe(xDiff, yDiff){
+// bin radian value
+function bin_rad(rad){
 
-    var rad = (Math.atan2(yDiff, xDiff) / Math.PI) + 1;
-    
-    //ctx1.fillText(rad, 500,500)
-    
     //console.log(rad)
-    
-    if(rad > (1/6) && rad <= (3/6)){
-    //console.log('e , rad > 1/6 && rad <= 3/6, rad: ' + rad.toString())
-    // e
-    slideB(true)
-    }
-    else if(rad > (1/2) && rad <= (5/6)){
-    //console.log('w , rad > 1/2 && rad <= 5/6, rad: ' + rad.toString())
-    // w
-    slideR(false)
-    }
-    else if(rad > (5/6) && rad <= (7/6)){
-    //console.log('a , rad > 5/6 && rad <= 7/6, rad: ' + rad.toString())
-    // a
-     slideG(false)
-    }
-    else if(rad > (7/6) && rad <= (9/6)){
-    //console.log('z , rad > 7/6 && rad <= 9/6, rad: ' + rad.toString())
-    // z
-    slideB(false)
-    }
-    else if(rad > (9/6) && rad <= (11/6)){
-    //console.log('x , rad > 9/6 && rad <= 11/6, rad: ' + rad.toString())
-    //  x
-    slideR(true)
-    }else{
-    //console.log('d , other rad,                rad: ' + rad.toString())
-    // d
-    slideG(true)
-    }
+
+    //R  1,4   var e_z_cols 
+    //G  5,2   var a_d_cols 
+    //B  0,3   var w_x_cols
 
 
+    if(rad < 1/6){
+        rad += 2 // avoid modular discontiunity
+    }
+    // rad 2/6
+    if(rad >= (1/6) && rad < (3/6)){
+        //console.log('w , rad > 1/6 && rad <= 3/6, rad: ' + rad.toString())
+        return [0, sector_alignment(2/6,rad)]
+    }
+    // rad 4/6
+    else if(rad >= (3/6) && rad < (5/6)){
+        //console.log('e , rad > 1/2 && rad <= 5/6, rad: ' + rad.toString())
+        return [1, sector_alignment(4/6,rad)]
+    }
+    // rad 6/6
+    else if(rad >= (5/6) && rad < (7/6)){
+        //console.log('d , rad > 5/6 && rad <= 7/6, rad: ' + rad.toString())
+        return [2, sector_alignment(6/6,rad)]
+    }
+    // rad 8/6
+    else if(rad >= (7/6) && rad < (9/6)){
+        //console.log('x , rad > 7/6 && rad <= 9/6, rad: ' + rad.toString())
+        return [3, sector_alignment(8/6,rad)]
+    }
+    // rad 10/6
+    else if(rad >= (9/6) && rad < (11/6)){
+        //console.log('z , rad > 9/6 && rad <= 11/6, rad: ' + rad.toString())
+        return [4, sector_alignment(10/6,rad)]
+    }
+    // rad 12/6
+    else{
+        //console.log('a , other rad,                rad: ' + rad.toString())
+        return [5, sector_alignment(12/6,rad)]
+    }
+}
+
+function slideSelect(direction){
+    switch(direction){
+        case 0:  // up to the left
+            slideB(false)
+            break
+        case 1:   // up to the right
+            slideR(true)
+            break
+        case 2:  // right
+            slideG(true)
+            break
+        case 3:  // down to the right
+            slideB(true)
+            break
+        case 4:   // down to the left
+           slideR(false)
+            break
+        case 5:  // left
+            slideG(false)
+            break
+    }
 }
 
 //console.log(canvas1)
@@ -2170,9 +2426,14 @@ addRandom()
 
 values = nextValues.slice()
 update = true
+
+checkGameOver()
 drawLoop()
 //console.log(values
 	
 console.log('hello logcat??')
 
+
+// case 0 [9, 2, 3, 13] ( this isn't right )
 </script>
+
