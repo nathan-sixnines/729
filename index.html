@@ -32,6 +32,8 @@
     <p">Score: </p>
 </div>
 
+<meta name="viewport" content="user-scalable=no">
+
 <button onclick="newGame()" class="button2"> New Game </button>
 
 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
@@ -1245,16 +1247,6 @@ function drawLoop(){
         
         var gameOverBool = false
         
-        //if(zeros == 0){
-        
-        if(checkGameOver()){
-        
-            first  = false   // this won't ever matter in practice but helps development
-            prompt = true
-            update = false
-            gameOver()
-        }
-        //}
         
         if(slide){
                 //for(var i = 1; i < 19; i++){  //posX.length
@@ -1357,6 +1349,14 @@ function drawLoop(){
             }
         }
     
+    }else{ // no update
+        if(checkGameOver()){
+        
+        first  = false   // this won't ever matter in practice but helps development
+        prompt = true
+        update = false
+        gameOver()
+    }
     }
 
     window.requestAnimationFrame(drawLoop)
