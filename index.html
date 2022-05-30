@@ -587,79 +587,6 @@ function draw_arrow(x, y, direction, ctx){
 
 }
 
-function draw_arrow_old(x, y, direction, ctx){
-
-    unfuck_arrow_list = [4,3,2,1,0,5] // I think because I already hardcoded something else, now I just need to hardcode this, or unhardcode the other thing first
-
-    direction = unfuck_arrow_list[direction]
-
-    console.log("arrow:" + (mod((angles[direction] + slice),2*Math.PI)))
-
-    var points = []
-
-    var angle_primary_1 = angles[direction] - slice
-    var angle_orthoginal_1 = angle_primary_1 + (Math.PI /2)
-    var angle_primary_2 = angle_primary_1 + Math.PI
-    var angle_orthoginal_2 = angle_orthoginal_1 + Math.PI
-    var angle_slant_1 = angle_primary_2 + Math.PI / 4
-    var angle_slant_2 = angle_primary_2 - Math.PI / 4
-
-    console.log(angle_primary_1)
-    console.log(angle_orthoginal_1)
-    console.log(angle_primary_2)
-    console.log(angle_orthoginal_2)
-
-    //ret = offsetExact2(x,y, angle_primary_2, circleSize/18)
-    var firstX = x//ret[0]
-    var firstY = y//ret[1]
-
-    ret = offsetExact2(firstX,firstY, angle_orthoginal_2, circleSize/16)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(cornerX,cornerY, angle_primary_2, circleSize/4)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(cornerX,cornerY, angle_orthoginal_1, circleSize/8)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(cornerX,cornerY, angle_primary_1, circleSize/4)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(cornerX,cornerY, angle_orthoginal_1, circleSize/8)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(x,y, angle_primary_1, 2*circleSize/7.5)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-    ret = offsetExact2(firstX,firstY, angle_orthoginal_2, 3*circleSize/16)
-    var cornerX = ret[0]
-    var cornerY = ret[1]
-    points.push({x: cornerX,y: cornerY})
-
-    ctx.strokeStyle = 'black'
-    if(isSafari){
-        ctx.lineWidth = 1
-        if(value != 0){
-            ctx.lineWidth += 2
-        }
-    } else {
-        ctx.lineWidth = 3
-    }
-    ctx.beginPath()
-    console.log(points)
-    roundedPoly(ctx, points, circleSize/24)
-    ctx.stroke()
-
-}
-
-g_count = 3
-
 function hexagon(x, y, ctx, value){
    
     var fill = false
@@ -755,9 +682,6 @@ function hexagon(x, y, ctx, value){
         ctx.fillText(value.toString(), x , y )
     }
    //ctx.stroke()
-
-   //if(g_count == 0 || g_count == 15){
-   g_count += 1
 
 }
 
