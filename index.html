@@ -462,7 +462,12 @@ var games = 0
 // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
 var LCG=s=>()=>(2**31-1&(s=Math.imul(48271,s)))/2**31;
 var time = Math.round((new Date()).getTime() / 1000);
-var rand = LCG(time)
+var _baseRand = LCG(time)
+var randCallCount = 0;  // Track RNG calls for save/restore
+var rand = function() {
+    randCallCount++;
+    return _baseRand();
+}
 
 var gameRecord = {'time': time,
                    'moves' : []}
@@ -1828,13 +1833,19 @@ function toClipboard(print_score){
     text = text_board()
 
     if(print_score){
-        text +=  "Score: " + score + "\n"      
+        text +=  "Score: " + score + "\n"
     } else {
-        var runDate = Date.now() - startDate 
+        var runDate = Date.now() - startDate
         text += "Time: " + formatTime(secs2Time((runDate)/1000)) + "\n"
     }
 
-    text += "https://nathan-sixnines.github.io/729"
+    // If we have a submitted score ID, link to the replay modal
+    // Otherwise just link to the main page
+    if (lastSubmittedScoreId) {
+        text += `https://nathan-sixnines.github.io/729/leaderboard.html?replay=${lastSubmittedScoreId}`;
+    } else {
+        text += "https://nathan-sixnines.github.io/729";
+    }
 
     navigator.clipboard.writeText(text)
     setTimeout(function() { alert('Copied to clipboard'); }, 1);
@@ -1846,16 +1857,12 @@ function saveGameState(){
         var gameState = {
             values: values,
             nextValues: nextValues,
-            score: score,
-            startDate: startDate,
             time: time,
             gameRecord: gameRecord,
-            timeToWin: timeToWin,
-            timeSubmitted: timeSubmitted,
-            highScoreSubmitted: highScoreSubmitted,
-            games: games,
+            score: score,
+            startDate: startDate,
             won: won,
-            prompt: prompt
+            randCallCount: randCallCount
         };
         localStorage.setItem('729_gameState', JSON.stringify(gameState));
     } catch(e) {
@@ -1870,26 +1877,25 @@ function restoreGameState(){
         if(savedState){
             var gameState = JSON.parse(savedState);
 
-            // Restore arrays and values
+            // Restore all game state
             values = gameState.values || new Array(19).fill(0);
             nextValues = gameState.nextValues || new Array(19).fill(0);
+            time = gameState.time;
+            gameRecord = gameState.gameRecord || {'time': time, 'moves': []};
             score = gameState.score || 0;
             startDate = gameState.startDate || Date.now();
-            time = gameState.time || Math.round((new Date()).getTime() / 1000);
-            gameRecord = gameState.gameRecord || {'time': time, 'moves': []};
-            timeToWin = gameState.timeToWin || null;
-            timeSubmitted = gameState.timeSubmitted || false;
-            highScoreSubmitted = gameState.highScoreSubmitted || false;
-            games = gameState.games || 0;
             won = gameState.won || false;
-            prompt = gameState.prompt || false;
 
-            // Recreate random generator from saved time seed
-            rand = LCG(time);
-            // Advance the random generator to match the number of moves made
-            for(var i = 0; i < gameRecord.moves.length; i++){
-                rand(); // Advance RNG state
+            // Restore RNG to correct position
+            _baseRand = LCG(time);
+            randCallCount = 0;
+            var savedRandCount = gameState.randCallCount || 0;
+
+            // Advance RNG to the saved position (without incrementing counter)
+            for(var i = 0; i < savedRandCount; i++){
+                _baseRand();
             }
+            randCallCount = savedRandCount;
 
             // Update score display
             var scoreDiv = document.getElementById("score");
@@ -1900,7 +1906,7 @@ function restoreGameState(){
             // Trigger a redraw
             update = true;
 
-            console.log('Game state restored from localStorage');
+            console.log(`Game state restored (RNG advanced ${savedRandCount} calls)`);
             return true;
         }
     } catch(e) {
@@ -1932,13 +1938,15 @@ function newGame(){
 
     // Reset game record for validation
     time = Math.round((new Date()).getTime() / 1000);
-    rand = LCG(time);
+    _baseRand = LCG(time);
+    randCallCount = 0;
     gameRecord = {'time': time, 'moves': []};
 
     // Reset submission flags
     timeToWin = null;
     timeSubmitted = false;
     highScoreSubmitted = false;
+    lastSubmittedScoreId = null;
 
     ctx4.clearRect(0,0,width,height)
 
@@ -2595,6 +2603,7 @@ var timeToWin = null;  // Track time to reach 729 tile
 var timeSubmitted = false;  // Track if time was already submitted
 var highScoreSubmitted = false;  // Track if high score was already submitted
 var sessionId = null;  // Persistent session ID for anonymous submissions
+var lastSubmittedScoreId = null;  // Store the ID of the last submitted score for sharing
 
 // Generate a simple UUID
 function generateUUID() {
@@ -2857,6 +2866,12 @@ async function submitTime() {
             var data = await response.json();
             console.log('Time submitted:', data);
             timeSubmitted = true;
+
+            // Store score ID for sharing
+            if (data.score_id) {
+                lastSubmittedScoreId = data.score_id;
+            }
+
             updateWinModalButtons();
 
             // Fetch rank info
@@ -2927,6 +2942,11 @@ async function autoSubmitHighScore(finalScore) {
 
         if (response.ok) {
             var data = await response.json();
+
+            // Store score ID for sharing
+            if (data.score_id) {
+                lastSubmittedScoreId = data.score_id;
+            }
 
             if (data.anonymous) {
                 // Anonymous submission - encourage login
