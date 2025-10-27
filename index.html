@@ -21,7 +21,7 @@
 
 <!-- Leaderboard Link -->
 <div style="position:absolute; top:2%; left:2%; z-index:100;">
-    <a href="leaderboard.html" style="background:#8CB84A; color:#282828; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold;">🏆 Leaderboard</a>
+    <a href="leaderboard.html" onclick="saveGameState()" style="background:#8CB84A; color:#282828; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold;">🏆 Leaderboard</a>
 </div>
 
 <div id ="instructions">
@@ -1840,9 +1840,90 @@ function toClipboard(print_score){
     setTimeout(function() { alert('Copied to clipboard'); }, 1);
 }
 
+// Save game state to localStorage
+function saveGameState(){
+    try {
+        var gameState = {
+            values: values,
+            nextValues: nextValues,
+            score: score,
+            startDate: startDate,
+            time: time,
+            gameRecord: gameRecord,
+            timeToWin: timeToWin,
+            timeSubmitted: timeSubmitted,
+            highScoreSubmitted: highScoreSubmitted,
+            games: games,
+            won: won,
+            prompt: prompt
+        };
+        localStorage.setItem('729_gameState', JSON.stringify(gameState));
+    } catch(e) {
+        console.log('Error saving game state:', e);
+    }
+}
+
+// Restore game state from localStorage
+function restoreGameState(){
+    try {
+        var savedState = localStorage.getItem('729_gameState');
+        if(savedState){
+            var gameState = JSON.parse(savedState);
+
+            // Restore arrays and values
+            values = gameState.values || new Array(19).fill(0);
+            nextValues = gameState.nextValues || new Array(19).fill(0);
+            score = gameState.score || 0;
+            startDate = gameState.startDate || Date.now();
+            time = gameState.time || Math.round((new Date()).getTime() / 1000);
+            gameRecord = gameState.gameRecord || {'time': time, 'moves': []};
+            timeToWin = gameState.timeToWin || null;
+            timeSubmitted = gameState.timeSubmitted || false;
+            highScoreSubmitted = gameState.highScoreSubmitted || false;
+            games = gameState.games || 0;
+            won = gameState.won || false;
+            prompt = gameState.prompt || false;
+
+            // Recreate random generator from saved time seed
+            rand = LCG(time);
+            // Advance the random generator to match the number of moves made
+            for(var i = 0; i < gameRecord.moves.length; i++){
+                rand(); // Advance RNG state
+            }
+
+            // Update score display
+            var scoreDiv = document.getElementById("score");
+            if(scoreDiv){
+                scoreDiv.innerText = "Score: " + score.toString();
+            }
+
+            // Trigger a redraw
+            update = true;
+
+            console.log('Game state restored from localStorage');
+            return true;
+        }
+    } catch(e) {
+        console.log('Error restoring game state:', e);
+    }
+    return false;
+}
+
+// Clear saved game state
+function clearSavedGameState(){
+    try {
+        localStorage.removeItem('729_gameState');
+    } catch(e) {
+        console.log('Error clearing game state:', e);
+    }
+}
+
 function newGame(){
 
     games += 1
+
+    // Clear any saved game state when starting new game
+    clearSavedGameState();
 
     nextValues.fill(0)
 
@@ -2495,8 +2576,12 @@ for(var i = 0; i < 19; i++){  //posX.length
 
 //drawBackground()
 
-addRandom()
-addRandom()
+// Try to restore saved game state, or initialize new game
+if(!restoreGameState()){
+    // No saved state, start fresh
+    addRandom()
+    addRandom()
+}
 
 //nextValues[0] = 1
 //nextValues[1] = 2
