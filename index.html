@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.1.0</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.0</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -446,14 +446,24 @@ var step  = 0
 var games = 0
 
 // https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript
-var LCG=s=>()=>(2**31-1&(s=Math.imul(48271,s)))/2**31;
-var time = Math.round((new Date()).getTime() / 1000);
-var _baseRand = LCG(time)
-var randCallCount = 0;  // Track RNG calls for save/restore
-var rand = function() {
-    randCallCount++;
-    return _baseRand();
+// Modified to expose internal state for save/restore
+var rngState = {
+    seed: 0,
+    current: 0
+};
+
+function initRNG(seed) {
+    rngState.seed = seed;
+    rngState.current = seed;
 }
+
+function rand() {
+    rngState.current = Math.imul(48271, rngState.current);
+    return (2**31-1 & rngState.current) / 2**31;
+}
+
+var time = Math.round((new Date()).getTime() / 1000);
+initRNG(time);
 
 var gameRecord = {'time': time,
                    'moves' : []}
@@ -1848,7 +1858,10 @@ function saveGameState(){
             score: score,
             startDate: startDate,
             won: won,
-            randCallCount: randCallCount
+            rngState: {
+                seed: rngState.seed,
+                current: rngState.current
+            }
         };
         localStorage.setItem('729_gameState', JSON.stringify(gameState));
     } catch(e) {
@@ -1863,25 +1876,25 @@ function restoreGameState(){
         if(savedState){
             var gameState = JSON.parse(savedState);
 
-            // Restore all game state
+            // Restore board state
             values = gameState.values || new Array(19).fill(0);
             nextValues = gameState.nextValues || new Array(19).fill(0);
+
+            // Restore game metadata
             time = gameState.time;
             gameRecord = gameState.gameRecord || {'time': time, 'moves': []};
             score = gameState.score || 0;
             startDate = gameState.startDate || Date.now();
             won = gameState.won || false;
 
-            // Restore RNG to correct position
-            _baseRand = LCG(time);
-            randCallCount = 0;
-            var savedRandCount = gameState.randCallCount || 0;
-
-            // Advance RNG to the saved position (without incrementing counter)
-            for(var i = 0; i < savedRandCount; i++){
-                _baseRand();
+            // Restore RNG state exactly as it was
+            if(gameState.rngState){
+                rngState.seed = gameState.rngState.seed;
+                rngState.current = gameState.rngState.current;
+            } else {
+                // Fallback for old saves without RNG state
+                initRNG(time);
             }
-            randCallCount = savedRandCount;
 
             // Update score display
             var scoreDiv = document.getElementById("score");
@@ -1892,7 +1905,7 @@ function restoreGameState(){
             // Trigger a redraw
             update = true;
 
-            console.log(`Game state restored (RNG advanced ${savedRandCount} calls)`);
+            console.log('Game state restored with RNG state');
             return true;
         }
     } catch(e) {
@@ -1924,8 +1937,7 @@ function newGame(){
 
     // Reset game record for validation
     time = Math.round((new Date()).getTime() / 1000);
-    _baseRand = LCG(time);
-    randCallCount = 0;
+    initRNG(time);
     gameRecord = {'time': time, 'moves': []};
 
     // Reset submission flags
