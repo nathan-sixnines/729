@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.1</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.3</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -1823,6 +1823,7 @@ function toClipboard(print_score){
 
     // If we have a submitted score ID, link to the replay modal
     // Otherwise just link to the main page
+    console.log('toClipboard: lastSubmittedScoreId =', lastSubmittedScoreId);
     if (lastSubmittedScoreId) {
         text += `https://nathan-sixnines.github.io/729/leaderboard.html?replay=${lastSubmittedScoreId}`;
     } else {
@@ -2759,6 +2760,14 @@ async function autoSubmitTime(timeSeconds) {
             var data = await response.json();
             var mins = Math.floor(timeSeconds / 60);
             var secs = timeSeconds % 60;
+
+            // Store score ID for sharing
+            if (data.score_id) {
+                lastSubmittedScoreId = data.score_id;
+                console.log('autoSubmitTime: captured score_id =', lastSubmittedScoreId);
+            } else {
+                console.log('autoSubmitTime: no score_id in response', data);
+            }
 
             if (data.anonymous) {
                 // Anonymous submission - encourage login

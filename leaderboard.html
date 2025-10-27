@@ -376,7 +376,6 @@
                 metadata.innerHTML = `
                     <p><strong>Player:</strong> ${data.username}</p>
                     <p><strong>Score:</strong> ${data.score.toLocaleString()}</p>
-                    ${data.submission_type === 'time' ? `<p><strong>Won:</strong> ${data.won ? 'Yes' : 'No'}</p>` : ''}
                 `;
                 modalBody.appendChild(metadata);
 
@@ -642,19 +641,19 @@
         }
 
         function renderBoard(boardValues, containerEl) {
-            // Board layout: 3-4-5-4-3 pattern
-            // Row 1: 12, 13, 14
-            // Row 2: 11, 3, 4, 15
-            // Row 3: 10, 2, 0, 5, 16
-            // Row 4: 9, 1, 6, 17
-            // Row 5: 8, 7, 18
+            // Board layout: 3-4-5-4-3 pattern (matching index.html colG1-colG5)
+            // Row 1: 10, 11, 12
+            // Row 2: 9, 2, 3, 13
+            // Row 3: 8, 1, 0, 4, 14
+            // Row 4: 7, 6, 5, 15
+            // Row 5: 18, 17, 16
 
             const rows = [
-                [12, 13, 14],
-                [11, 3, 4, 15],
-                [10, 2, 0, 5, 16],
-                [9, 1, 6, 17],
-                [8, 7, 18]
+                [10, 11, 12],
+                [9, 2, 3, 13],
+                [8, 1, 0, 4, 14],
+                [7, 6, 5, 15],
+                [18, 17, 16]
             ];
 
             let html = '<div style="font-size: 40px; line-height: 1.2; text-align: center; font-family: monospace;">';
