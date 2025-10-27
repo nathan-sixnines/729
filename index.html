@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.3</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.4</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -1812,21 +1812,23 @@ async function gameOver(){
 
 function toClipboard(print_score){
 
-    text = text_board()
+    var text;
 
-    if(print_score){
-        text +=  "Score: " + score + "\n"
-    } else {
-        var runDate = Date.now() - startDate
-        text += "Time: " + formatTime(secs2Time((runDate)/1000)) + "\n"
-    }
-
-    // If we have a submitted score ID, link to the replay modal
-    // Otherwise just link to the main page
+    // If we have a submitted score ID, just share the replay link
+    // Otherwise share the full board display
     console.log('toClipboard: lastSubmittedScoreId =', lastSubmittedScoreId);
     if (lastSubmittedScoreId) {
-        text += `https://nathan-sixnines.github.io/729/leaderboard.html?replay=${lastSubmittedScoreId}`;
+        text = `https://nathan-sixnines.github.io/729/leaderboard.html?replay=${lastSubmittedScoreId}`;
     } else {
+        text = text_board();
+
+        if(print_score){
+            text +=  "Score: " + score + "\n"
+        } else {
+            var runDate = Date.now() - startDate
+            text += "Time: " + formatTime(secs2Time((runDate)/1000)) + "\n"
+        }
+
         text += "https://nathan-sixnines.github.io/729";
     }
 
