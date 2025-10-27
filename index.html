@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.6</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.7</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -1902,16 +1902,27 @@ function restoreGameState(){
             // Restore modal state if needed
             if(gameState.showGameOver){
                 var gameOverDiv = document.getElementById("gameOver");
-                if(gameOverDiv){
+                var innerDiv = document.getElementById("inner1");
+                if(gameOverDiv && innerDiv){
+                    innerDiv.innerText = "Game over! Your score is " + score.toString() + ".";
                     gameOverDiv.style.display = 'inline-block';
                     prompt = true;
+
+                    // Update modal buttons based on current auth state
+                    // updateAuthUI handles game over login button visibility
+                    updateAuthUI();
                 }
             }
             if(gameState.showYouWin){
                 var youWinDiv = document.getElementById("youWin");
-                if(youWinDiv){
+                var innerDiv2 = document.getElementById("inner2");
+                if(youWinDiv && innerDiv2){
+                    innerDiv2.innerText = "You Won!";
                     youWinDiv.style.display = 'inline-block';
                     prompt = true;
+
+                    // Update modal buttons based on current auth state
+                    updateWinModalButtons();
                 }
             }
 
