@@ -12,7 +12,7 @@
 
 <!-- Login/User Info -->
 <div id="authContainer" style="position:absolute; top:2%; right:2%; z-index:100;">
-    <button id="loginBtn" onclick="saveGameState(); loginWithThreads();" style="display:none; background:#000; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px;">Login</button>
+    <button id="loginBtn" onclick="saveGameState(); loginWithThreads();" style="display:none; background:#000; color:#fff; border:none; padding:12px 24px; border-radius:8px; cursor:pointer; font-size:18px;">Login</button>
     <div id="userInfo" style="display:none; background:rgba(0,0,0,0.7); color:#fff; padding:8px 12px; border-radius:8px; font-size:14px;">
         <span id="username"></span>
         <button onclick="logoutUser()" style="margin-left:10px; background:#666; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">Logout</button>
@@ -21,11 +21,11 @@
 
 <!-- Leaderboard Link -->
 <div style="position:absolute; top:2%; left:2%; z-index:100;">
-    <a href="leaderboard.html" onclick="saveGameState()" style="background:#8CB84A; color:#282828; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold;">🏆 Leaderboard</a>
+    <a href="leaderboard.html" onclick="saveGameState()" style="background:#8CB84A; color:#282828; padding:12px 24px; border-radius:8px; text-decoration:none; font-size:18px; font-weight:bold;">🏆 Leaderboard</a>
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.2.9</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.3.0</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -2731,7 +2731,24 @@ function updateAuthUI() {
 }
 
 function loginWithThreads() {
-    window.location.href = API_URL + '/auth/threads';
+    const authUrl = API_URL + '/auth/threads';
+
+    // Detect mobile devices
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+    if (isMobile) {
+        // On mobile, open in a new tab to prevent Threads app from hijacking the OAuth flow
+        // Using _blank forces it to stay in browser context rather than opening the Threads app
+        const authWindow = window.open(authUrl, '_blank', 'noopener,noreferrer');
+
+        // If popup was blocked, fall back to same-window redirect
+        if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
+            window.location.href = authUrl;
+        }
+    } else {
+        // Desktop: redirect in same window (original behavior)
+        window.location.href = authUrl;
+    }
 }
 
 async function logoutUser() {
@@ -2976,6 +2993,9 @@ async function autoSubmitHighScore(finalScore) {
 
         if (response.ok) {
             var data = await response.json();
+
+            // Clear saved game state since this game is now submitted
+            clearSavedGameState();
 
             // Store score ID for sharing
             if (data.score_id) {
