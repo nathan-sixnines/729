@@ -641,19 +641,20 @@
         }
 
         function renderBoard(boardValues, containerEl) {
-            // Board layout: 3-4-5-4-3 pattern (matching index.html colG1-colG5)
-            // Row 1: 10, 11, 12
-            // Row 2: 9, 2, 3, 13
-            // Row 3: 8, 1, 0, 4, 14
-            // Row 4: 7, 6, 5, 15
-            // Row 5: 18, 17, 16
+            // Board layout: 3-4-5-4-3 pattern (matching index.html text_board rendering)
+            // text_board iterates backwards through each colG array, so we match that order:
+            // colG1=[10,11,12] reversed → 12, 11, 10
+            // colG2=[9,2,3,13] reversed → 13, 3, 2, 9
+            // colG3=[8,1,0,4,14] reversed → 14, 4, 0, 1, 8
+            // colG4=[7,6,5,15] reversed → 15, 5, 6, 7
+            // colG5=[18,17,16] reversed → 16, 17, 18
 
             const rows = [
-                [10, 11, 12],
-                [9, 2, 3, 13],
-                [8, 1, 0, 4, 14],
-                [7, 6, 5, 15],
-                [18, 17, 16]
+                [12, 11, 10],
+                [13, 3, 2, 9],
+                [14, 4, 0, 1, 8],
+                [15, 5, 6, 7],
+                [16, 17, 18]
             ];
 
             let html = '<div style="font-size: 40px; line-height: 1.2; text-align: center; font-family: monospace;">';
