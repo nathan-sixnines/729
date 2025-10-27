@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.3.1</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.4.0</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -2733,22 +2733,47 @@ function updateAuthUI() {
 function loginWithThreads() {
     const authUrl = API_URL + '/auth/threads';
 
-    // Detect mobile devices
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    // Open OAuth in popup window
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
 
-    if (isMobile) {
-        // On mobile, open in a new tab to prevent Threads app from hijacking the OAuth flow
-        // Using _blank forces it to stay in browser context rather than opening the Threads app
-        const authWindow = window.open(authUrl, '_blank', 'noopener,noreferrer');
+    const popup = window.open(
+        authUrl,
+        'threadsLogin',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=no,location=no,menubar=no`
+    );
 
-        // If popup was blocked, fall back to same-window redirect
-        if (!authWindow || authWindow.closed || typeof authWindow.closed === 'undefined') {
-            window.location.href = authUrl;
-        }
-    } else {
-        // Desktop: redirect in same window (original behavior)
+    // Handle popup blocked
+    if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // Fallback to full page redirect if popup was blocked
+        alert('Popup was blocked. Redirecting to login page...');
         window.location.href = authUrl;
+        return;
     }
+
+    // Listen for login success message from popup
+    const messageHandler = function(event) {
+        // Security: verify message origin (in production, check event.origin)
+        if (event.data && event.data.type === 'threads_login_success') {
+            window.removeEventListener('message', messageHandler);
+
+            // Popup will close itself, but check auth status
+            checkAuth();
+        }
+    };
+    window.addEventListener('message', messageHandler);
+
+    // Poll to detect if popup was closed manually (without completing login)
+    const pollTimer = setInterval(function() {
+        if (popup.closed) {
+            clearInterval(pollTimer);
+            window.removeEventListener('message', messageHandler);
+            // Check auth in case login completed but message was missed
+            checkAuth();
+        }
+    }, 500);
 }
 
 async function logoutUser() {
