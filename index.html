@@ -9,6 +9,21 @@
 <div id="title">
 <h1>729</h1>
 </div>
+
+<!-- Login/User Info -->
+<div id="authContainer" style="position:absolute; top:2%; right:2%; z-index:100;">
+    <button id="loginBtn" onclick="loginWithThreads()" style="display:none; background:#000; color:#fff; border:none; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:14px;">Login</button>
+    <div id="userInfo" style="display:none; background:rgba(0,0,0,0.7); color:#fff; padding:8px 12px; border-radius:8px; font-size:14px;">
+        <span id="username"></span>
+        <button onclick="logoutUser()" style="margin-left:10px; background:#666; color:#fff; border:none; padding:4px 8px; border-radius:4px; cursor:pointer; font-size:12px;">Logout</button>
+    </div>
+</div>
+
+<!-- Leaderboard Link -->
+<div style="position:absolute; top:2%; left:2%; z-index:100;">
+    <a href="/leaderboard" style="background:#8CB84A; color:#282828; padding:8px 16px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:bold;">🏆 Leaderboard</a>
+</div>
+
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
 </div>
@@ -16,16 +31,26 @@
     <div id ="inner1">
         <p>Game over! Your score is 0.</p>
     </div>
+    <div id="gameOverSubmissionStatus" style="display:none; margin:10px 0; padding:10px; background:rgba(140,184,74,0.2); border-radius:8px; font-size:14px;"></div>
+    <div id="gameOverLoginPrompt" style="display:none; margin:10px 0; color:#666; font-size:14px;">
+        <p>Login to save your high score!</p>
+    </div>
 <button onclick="newGame()" class="button">New Game</button>
 <button onclick="toClipboard(true)" class="button3">Share (clipboard)</button>
+<button id="gameOverLoginBtn" onclick="loginWithThreads()" class="button" style="display:none;">Login to Claim Score</button>
 </div>
 
 <div id ="youWin">
     <div id ="inner2">
         <p">You won!</p>
     </div>
+    <div id="winTimeDisplay" style="margin:10px 0; font-size:16px;"></div>
+    <div id="winLoginPrompt" style="display:none; margin:10px 0; color:#666; font-size:14px;">
+        <p>Login to submit your time!</p>
+    </div>
 <button onclick="continueGame()" class="contButton">Continue?</button>
 <button onclick="toClipboard(false)" class="button3">Share (clipboard)</button>
+<button id="winLoginBtn" onclick="loginWithThreads()" class="button" style="display:none;">Login to Claim Time</button>
 </div>
 
 <div id ="score" onclick="toggleScore()">
@@ -1754,14 +1779,24 @@ function checkGameOver(){
     }
 }
 
-function youWin(){
+async function youWin(){
 
     won = true
+    timeToWin = Math.floor((Date.now() - startDate) / 1000);  // seconds to reach 729
+
     var winDiv = document.getElementById("youWin");
-    var innerDiv = document.getElementById("inner1");
-    inner1.innerText =" You Won!"
+    var innerDiv = document.getElementById("inner2");
+    innerDiv.innerText = "You Won!"
+
+    // Only submit once
+    if (!timeSubmitted) {
+        timeSubmitted = true;
+        // Always auto-submit (works for both logged-in and anonymous users)
+        await autoSubmitTime(timeToWin);
+    }
+
     winDiv.style.display = 'inline-block'
-    
+
 }
 
 function continueGame(){
@@ -1772,12 +1807,19 @@ function continueGame(){
 
 }
 
-function gameOver(){
+async function gameOver(){
 
     var overDiv = document.getElementById("gameOver");
     var innerDiv = document.getElementById("inner1");
     innerDiv.innerText ="Game over! Your score is "+ score.toString() + "."
     overDiv.style.display = 'inline-block'
+
+    // Only submit once
+    if (!highScoreSubmitted) {
+        highScoreSubmitted = true;
+        // Always auto-submit (works for both logged-in and anonymous users)
+        await autoSubmitHighScore(score);
+    }
 
 }
 
@@ -1803,20 +1845,30 @@ function newGame(){
     games += 1
 
     nextValues.fill(0)
-    
+
     score = 0
     startDate  = Date.now()
-    
+
+    // Reset game record for validation
+    time = Math.round((new Date()).getTime() / 1000);
+    rand = LCG(time);
+    gameRecord = {'time': time, 'moves': []};
+
+    // Reset submission flags
+    timeToWin = null;
+    timeSubmitted = false;
+    highScoreSubmitted = false;
+
     ctx4.clearRect(0,0,width,height)
-    
+
     addRandom()
     addRandom()
-    
+
     values = nextValues.slice()
-    
+
     prompt = false
     update = true
-    
+
     var overDiv = document.getElementById("gameOver");
     overDiv.style.display = 'none'
 
@@ -2001,15 +2053,16 @@ function addRandom(){
     }
 
     var pick = pickList[Math.floor(rand()*pickList.length)];
-    
-    if(Math.random() > 5/9){
+
+    // IMPORTANT: Must use seeded rand() here for validation to work!
+    if(rand() > 5/9){
         //if(mod(games,2)== 0){
             nextValues[pick] = 9
         //} else {
         //    nextValues[pick] = 3
         //}
     } else {
-            nextValues[pick] = 3    
+            nextValues[pick] = 3
     }
     //nextValues[0] = 3
   
@@ -2020,18 +2073,22 @@ function slideR(up){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
         pops   = new Array(19).fill(0)
-        
+
         var a  = slideCol(colR1,up)
         var b  = slideCol(colR2,up)
         var c  = slideCol(colR3,up)
         var d  = slideCol(colR4,up)
         var e  = slideCol(colR5,up)
-        
+
         if(a+b+c+d+e > 0){
+            // Move actually executed, record it
+            // R true = direction 1 (up to the right)
+            // R false = direction 4 (down to the left)
+            gameRecord.moves.push(up ? 1 : 4);
             addRandom()
         }
         update = true
-        first = false  
+        first = false
         animate()
     }
 }
@@ -2040,15 +2097,19 @@ function slideG(up){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index(old values) to target position index
         pops   = new Array(19).fill(0)
-        
+
         var a  = slideCol(colG1,up)
         var b  = slideCol(colG2,up)
         var c  = slideCol(colG3,up)
         var d  = slideCol(colG4,up)
         var e  = slideCol(colG5,up)
-        
+
         var sum = a+b+c+d+e
         if(sum > 0){
+            // Move actually executed, record it
+            // G true = direction 2 (right)
+            // G false = direction 5 (left)
+            gameRecord.moves.push(up ? 2 : 5);
             addRandom()
         }
         update = true
@@ -2061,13 +2122,17 @@ function slideB(up){
         nextValues = values.slice()
         slides = new Array(19).fill(-1)  // slides go from current position index (old values) to target position index
         pops   = new Array(19).fill(0)
-        
+
         var a  = slideCol(colB1,up)
         var b  = slideCol(colB2,up)
         var c  = slideCol(colB3,up)
         var d  = slideCol(colB4,up)
         var e  = slideCol(colB5,up)
         if(a+b+c+d+e > 0){
+            // Move actually executed, record it
+            // B false = direction 0 (up to the left)
+            // B true = direction 3 (down to the right)
+            gameRecord.moves.push(up ? 3 : 0);
             addRandom()
         }
         update = true
@@ -2138,24 +2203,26 @@ document.onkeydown = function(e) {
 }
 
 function actionByKeyCode(code){
+    // Map keyboard to direction numbers (0-5)
+    // This way we use the same slideSelect() that mouse/touch uses
     switch (code) {
-        case 87: // w
-            slideB(false)
+        case 87: // w -> direction 0 (B false = up to the left)
+            slideSelect(0)
             break
-        case 69: // e
-            slideR(true)
-            break    
-        case 68: // d
-            slideG(true)
+        case 69: // e -> direction 1 (R true = up to the right)
+            slideSelect(1)
             break
-        case 88: // x
-            slideB(true)
+        case 68: // d -> direction 2 (G true = right)
+            slideSelect(2)
             break
-        case 90: // z
-            slideR(false)
+        case 88: // x -> direction 3 (B true = down to the right)
+            slideSelect(3)
             break
-        case 65: // a
-            slideG(false)
+        case 90: // z -> direction 4 (R false = down to the left)
+            slideSelect(4)
+            break
+        case 65: // a -> direction 5 (G false = left)
+            slideSelect(5)
             break
     }
 }
@@ -2390,6 +2457,8 @@ function bin_rad(rad){
 }
 
 function slideSelect(direction){
+    // Slide functions record moves internally when they execute
+
     switch(direction){
         case 0:  // up to the left
             slideB(false)
@@ -2433,6 +2502,475 @@ addRandom()
 //nextValues[1] = 2
 //nextValues[4] = 3
 //nextValues[8] = 4
+
+// ===== AUTHENTICATION CODE =====
+var currentUser = null;
+var API_URL = 'https://chcdtf38fi.execute-api.us-east-1.amazonaws.com';  // Backend API
+var timeToWin = null;  // Track time to reach 729 tile
+var timeSubmitted = false;  // Track if time was already submitted
+var highScoreSubmitted = false;  // Track if high score was already submitted
+var sessionId = null;  // Persistent session ID for anonymous submissions
+
+// Generate a simple UUID
+function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Get or create session ID
+function getSessionId() {
+    if (sessionId) return sessionId;
+
+    sessionId = localStorage.getItem('gameSessionId');
+    if (!sessionId) {
+        sessionId = generateUUID();
+        localStorage.setItem('gameSessionId', sessionId);
+    }
+    return sessionId;
+}
+
+
+async function claimAnonymousScores() {
+    var sid = getSessionId();
+
+    try {
+        var response = await fetch(API_URL + '/claim-scores', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ session_id: sid })
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            console.log(`Claimed ${data.claimed_count} anonymous scores`);
+            if (data.claimed_count > 0) {
+                // Show success message
+                alert(`✓ ${data.claimed_count} score(s) claimed and added to your leaderboard!`);
+            }
+            return data.claimed_count;
+        }
+    } catch (error) {
+        console.error('Error claiming anonymous scores:', error);
+    }
+    return 0;
+}
+
+async function checkAuth() {
+    try {
+        var response = await fetch(API_URL + '/me', {
+            credentials: 'include'
+        });
+
+        if (response.ok) {
+            currentUser = await response.json();
+            updateAuthUI();
+
+            // Claim any anonymous submissions from this session
+            await claimAnonymousScores();
+
+            return currentUser;
+        } else {
+            currentUser = null;
+            updateAuthUI();
+            return null;
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        currentUser = null;
+        updateAuthUI();
+        return null;
+    }
+}
+
+function updateAuthUI() {
+    var loginBtn = document.getElementById('loginBtn');
+    var userInfo = document.getElementById('userInfo');
+    var usernameSpan = document.getElementById('username');
+    var gameOverLoginBtn = document.getElementById('gameOverLoginBtn');
+    var gameOverLoginPrompt = document.getElementById('gameOverLoginPrompt');
+
+    if (currentUser) {
+        // User is logged in
+        loginBtn.style.display = 'none';
+        userInfo.style.display = 'block';
+        usernameSpan.textContent = currentUser.username;
+        gameOverLoginBtn.style.display = 'none';
+        gameOverLoginPrompt.style.display = 'none';
+    } else {
+        // User is not logged in
+        loginBtn.style.display = 'block';
+        userInfo.style.display = 'none';
+        gameOverLoginBtn.style.display = 'inline-block';
+        gameOverLoginPrompt.style.display = 'block';
+    }
+}
+
+function loginWithThreads() {
+    window.location.href = API_URL + '/auth/threads';
+}
+
+async function logoutUser() {
+    try {
+        await fetch(API_URL + '/logout', {
+            method: 'POST',
+            credentials: 'include'
+        });
+        currentUser = null;
+        updateAuthUI();
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+}
+
+function updateWinModalButtons() {
+    var submitTimeBtn = document.getElementById('submitTimeBtn');
+    var winLoginBtn = document.getElementById('winLoginBtn');
+    var winLoginPrompt = document.getElementById('winLoginPrompt');
+
+    if (currentUser && !timeSubmitted) {
+        submitTimeBtn.style.display = 'inline-block';
+        winLoginBtn.style.display = 'none';
+        winLoginPrompt.style.display = 'none';
+    } else if (!currentUser) {
+        submitTimeBtn.style.display = 'none';
+        winLoginBtn.style.display = 'inline-block';
+        winLoginPrompt.style.display = 'block';
+    } else {
+        // Already submitted
+        submitTimeBtn.style.display = 'none';
+        winLoginBtn.style.display = 'none';
+        winLoginPrompt.style.display = 'none';
+    }
+}
+
+async function autoSubmitTime(timeSeconds) {
+    var timeDisplay = document.getElementById('winTimeDisplay');
+
+    try {
+        timeDisplay.textContent = 'Submitting time...';
+
+        var submissionData = {
+            game_id: '729',
+            submission_type: 'time',
+            score: score,
+            time_to_729_seconds: timeSeconds,
+            seed: time,
+            moves: gameRecord.moves
+        };
+
+        // Add session_id if not logged in
+        if (!currentUser) {
+            submissionData.session_id = getSessionId();
+        }
+
+        var response = await fetch(API_URL + '/scores', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(submissionData)
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            var mins = Math.floor(timeSeconds / 60);
+            var secs = timeSeconds % 60;
+
+            if (data.anonymous) {
+                // Anonymous submission - encourage login
+                timeDisplay.innerHTML = `
+                    ✓ Time saved! (${mins}:${secs.toString().padStart(2, '0')})<br>
+                    <span style="font-size:12px; color:#8CB84A;">Login to claim it on the leaderboard!</span>
+                `;
+                document.getElementById('winLoginBtn').style.display = 'inline-block';
+                document.getElementById('winLoginPrompt').style.display = 'none';
+            } else {
+                // Logged-in submission - check ranking
+                var qualifyResponse = await fetch(
+                    `${API_URL}/check-qualify/time?score=${score}&time_seconds=${timeSeconds}`
+                );
+
+                if (qualifyResponse.ok) {
+                    var qualifyData = await qualifyResponse.json();
+
+                    if (qualifyData.has_any) {
+                        var best = null;
+                        var bestPeriodName = '';
+
+                        if (qualifyData.qualifies.daily) {
+                            best = qualifyData.qualifies.daily;
+                            bestPeriodName = 'today';
+                        } else if (qualifyData.qualifies.weekly) {
+                            best = qualifyData.qualifies.weekly;
+                            bestPeriodName = 'this week';
+                        } else if (qualifyData.qualifies.all_time) {
+                            best = qualifyData.qualifies.all_time;
+                            bestPeriodName = 'all time';
+                        }
+
+                        if (best) {
+                            timeDisplay.innerHTML = `
+                                ✓ Time submitted!<br>
+                                🏆 You're #${best.rank} ${bestPeriodName}!
+                            `;
+                        } else {
+                            timeDisplay.textContent = `✓ Time submitted! (${mins}:${secs.toString().padStart(2, '0')})`;
+                        }
+                    } else {
+                        timeDisplay.textContent = `✓ Time submitted! (${mins}:${secs.toString().padStart(2, '0')})`;
+                    }
+                } else {
+                    timeDisplay.textContent = `✓ Time submitted! (${mins}:${secs.toString().padStart(2, '0')})`;
+                }
+            }
+
+            timeSubmitted = true;
+        } else {
+            var error = await response.json();
+            timeDisplay.textContent = '✗ Submission failed: ' + (error.detail || 'Unknown error');
+        }
+    } catch (error) {
+        console.error('Error submitting time:', error);
+        timeDisplay.textContent = '✗ Error: ' + error.message;
+    }
+}
+
+
+async function submitTime() {
+    if (!currentUser || timeSubmitted || timeToWin === null) {
+        console.log('Cannot submit time');
+        return;
+    }
+
+    try {
+        var timeDisplay = document.getElementById('winTimeDisplay');
+        timeDisplay.textContent = 'Submitting time...';
+
+        var response = await fetch(API_URL + '/scores', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                game_id: '729',
+                submission_type: 'time',
+                score: score,
+                time_to_729_seconds: timeToWin,
+                seed: time,
+                moves: gameRecord.moves
+            })
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            console.log('Time submitted:', data);
+            timeSubmitted = true;
+            updateWinModalButtons();
+
+            // Fetch rank info
+            try {
+                var rankResponse = await fetch(API_URL + '/user/rank/time?time_period=all_time', {
+                    credentials: 'include'
+                });
+
+                if (rankResponse.ok) {
+                    var rankData = await rankResponse.json();
+                    if (rankData.has_score) {
+                        var rank = rankData.rank_info.rank;
+                        var total = rankData.rank_info.total_players;
+                        var mins = Math.floor(timeToWin / 60);
+                        var secs = timeToWin % 60;
+                        timeDisplay.innerHTML = `
+                            ✓ Time submitted!<br>
+                            Rank: #${rank} of ${total} players<br>
+                            Time: ${mins}:${secs.toString().padStart(2, '0')}
+                        `;
+                    }
+                }
+            } catch (e) {
+                timeDisplay.textContent = '✓ Time submitted successfully!';
+            }
+        } else {
+            var error = await response.text();
+            console.error('Failed to submit time:', error);
+            timeDisplay.textContent = '✗ Failed: ' + error;
+        }
+    } catch (error) {
+        console.error('Time submission error:', error);
+        timeDisplay.textContent = '✗ Error: ' + error.message;
+    }
+}
+
+async function autoSubmitHighScore(finalScore) {
+    var statusDiv = document.getElementById('gameOverSubmissionStatus');
+
+    try {
+        statusDiv.style.display = 'block';
+        statusDiv.textContent = 'Submitting score...';
+
+        console.log(`DEBUG: Submitting high score. Score=${finalScore}, Seed=${time}, Moves=${gameRecord.moves.length}`);
+        console.log(`DEBUG: gameRecord =`, gameRecord);
+
+        var submissionData = {
+            game_id: '729',
+            submission_type: 'high_score',
+            score: finalScore,
+            seed: time,
+            moves: gameRecord.moves
+        };
+
+        // Add session_id if not logged in
+        if (!currentUser) {
+            submissionData.session_id = getSessionId();
+        }
+
+        var response = await fetch(API_URL + '/scores', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(submissionData)
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+
+            if (data.anonymous) {
+                // Anonymous submission - encourage login
+                statusDiv.innerHTML = `
+                    ✓ Score saved!<br>
+                    <span style="font-size:12px; color:#8CB84A;">Login to claim it on the leaderboard!</span>
+                `;
+                document.getElementById('gameOverLoginBtn').style.display = 'inline-block';
+                document.getElementById('gameOverLoginPrompt').style.display = 'none';
+            } else {
+                // Logged-in submission - check ranking
+                var qualifyResponse = await fetch(
+                    `${API_URL}/check-qualify/high_score?score=${finalScore}`
+                );
+
+                if (qualifyResponse.ok) {
+                    var qualifyData = await qualifyResponse.json();
+
+                    if (qualifyData.has_any) {
+                        var best = null;
+                        var bestPeriodName = '';
+
+                        if (qualifyData.qualifies.daily) {
+                            best = qualifyData.qualifies.daily;
+                            bestPeriodName = 'today';
+                        } else if (qualifyData.qualifies.weekly) {
+                            best = qualifyData.qualifies.weekly;
+                            bestPeriodName = 'this week';
+                        } else if (qualifyData.qualifies.all_time) {
+                            best = qualifyData.qualifies.all_time;
+                            bestPeriodName = 'all time';
+                        }
+
+                        if (best) {
+                            statusDiv.innerHTML = `
+                                ✓ Score submitted!<br>
+                                🏆 You're #${best.rank} ${bestPeriodName}!
+                            `;
+                        } else {
+                            statusDiv.textContent = `✓ Score submitted!`;
+                        }
+                    } else {
+                        statusDiv.textContent = `✓ Score submitted!`;
+                    }
+                } else {
+                    statusDiv.textContent = `✓ Score submitted!`;
+                }
+            }
+        } else {
+            var error = await response.json();
+            statusDiv.textContent = '✗ Submission failed: ' + (error.detail || 'Unknown error');
+        }
+    } catch (error) {
+        console.error('Error submitting score:', error);
+        statusDiv.textContent = '✗ Error: ' + error.message;
+    }
+}
+
+
+async function submitHighScore() {
+    var finalScore = score;
+
+    if (!currentUser) {
+        return;
+    }
+
+    var statusDiv = document.getElementById('gameOverSubmissionStatus');
+    var submitBtn = document.getElementById('gameOverSubmitBtn');
+    submitBtn.style.display = 'none';
+
+    try {
+        statusDiv.style.display = 'block';
+        statusDiv.textContent = 'Submitting score...';
+
+        var response = await fetch(API_URL + '/scores', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                game_id: '729',
+                submission_type: 'high_score',
+                score: finalScore,
+                seed: time,
+                moves: gameRecord.moves
+            })
+        });
+
+        if (response.ok) {
+            var data = await response.json();
+            console.log('High score submitted:', data);
+
+            // Fetch rank info
+            try {
+                var rankResponse = await fetch(API_URL + '/user/rank/high_score?time_period=all_time', {
+                    credentials: 'include'
+                });
+
+                if (rankResponse.ok) {
+                    var rankData = await rankResponse.json();
+                    if (rankData.has_score) {
+                        var rank = rankData.rank_info.rank;
+                        var total = rankData.rank_info.total_players;
+                        statusDiv.innerHTML = `
+                            ✓ Score submitted!<br>
+                            Rank: #${rank} of ${total} players<br>
+                            Score: ${finalScore.toLocaleString()}
+                        `;
+                    }
+                }
+            } catch (e) {
+                statusDiv.textContent = '✓ Score submitted successfully!';
+            }
+        } else {
+            var errorText = await response.text();
+            console.error('Failed to submit high score:', errorText);
+            statusDiv.textContent = '✗ Failed to submit score: ' + errorText;
+            statusDiv.style.background = 'rgba(255,107,107,0.2)';
+        }
+    } catch (error) {
+        console.error('High score submission error:', error);
+        statusDiv.textContent = '✗ Error submitting score: ' + error.message;
+        statusDiv.style.background = 'rgba(255,107,107,0.2)';
+    }
+}
+
+// Check auth on page load
+checkAuth();
 
 values = nextValues.slice()
 update = true

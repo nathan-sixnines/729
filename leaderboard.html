@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>729 - Leaderboard</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #222529;
+            color: #D1D2D3;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 48px;
+            margin: 20px 0;
+            color: #D1D2D3;
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #8CB84A;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: #333;
+            color: #D1D2D3;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .tab:hover {
+            background: #444;
+        }
+
+        .tab.active {
+            background: #8CB84A;
+            color: #282828;
+        }
+
+        .leaderboard-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .leaderboard-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .leaderboard-section {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .leaderboard-section h2 {
+            margin: 0 0 20px 0;
+            color: #8CB84A;
+            font-size: 24px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+        }
+
+        .leaderboard-table thead {
+            background: #333;
+        }
+
+        .leaderboard-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+            color: #8CB84A;
+        }
+
+        .leaderboard-table td {
+            padding: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        .leaderboard-table tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .leaderboard-table tbody tr:hover {
+            background: #333;
+        }
+
+        .leaderboard-table tbody tr.expanded-main {
+            background: #333;
+            border-left: 3px solid #8CB84A;
+        }
+
+        .rank {
+            font-weight: bold;
+            color: #8CB84A;
+        }
+
+        .rank-1 { color: #FFD700; } /* Gold */
+        .rank-2 { color: #C0C0C0; } /* Silver */
+        .rank-3 { color: #CD7F32; } /* Bronze */
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ff6b6b;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Board display */
+        .board-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+            position: relative;
+        }
+
+        .board-container canvas {
+            border-radius: 8px;
+        }
+
+        .share-button {
+            background: #8CB84A;
+            color: #282828;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .share-button:hover {
+            background: #9CC95A;
+        }
+
+        .board-loading {
+            text-align: center;
+            color: #666;
+            padding: 40px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2a2a2a;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            border: 2px solid #8CB84A;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: #D1D2D3;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            line-height: 1;
+            transition: background 0.3s;
+        }
+
+        .modal-close:hover {
+            background: #8CB84A;
+            color: #282828;
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8CB84A;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #8CB84A;
+            font-size: 24px;
+        }
+
+        .modal-body {
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .modal-body .board-container {
+            margin: 20px 0;
+        }
+
+        .modal-body .share-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Modal -->
+    <div class="modal-overlay" id="replayModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <div class="modal-header">
+                <h3 id="modalTitle">Game Replay</h3>
+            </div>
+            <div class="modal-body" id="modalBody">
+                Hello World!
+            </div>
+        </div>
+    </div>
+    <div class="container">
+        <a href="/game/" class="back-link">← Back to Game</a>
+
+        <h1>729 Leaderboard</h1>
+
+        <div class="tabs">
+            <button class="tab active" data-period="all_time">All Time</button>
+            <button class="tab" data-period="weekly">This Week</button>
+            <button class="tab" data-period="daily">Today</button>
+        </div>
+
+        <div class="leaderboard-container">
+            <div class="leaderboard-section">
+                <h2>⏱️ Fastest Times</h2>
+                <div id="timeLeaderboard" class="loading">Loading...</div>
+            </div>
+
+            <div class="leaderboard-section">
+                <h2>🏆 High Scores</h2>
+                <div id="highScoreLeaderboard" class="loading">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://chcdtf38fi.execute-api.us-east-1.amazonaws.com';
+        let currentPeriod = 'all_time';
+        let currentScoreId = null;
+
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentPeriod = tab.dataset.period;
+                loadLeaderboards();
+            });
+        });
+
+        // Modal functions
+        async function openModal(scoreId, rank = null, submissionType = null, timePeriod = null) {
+            currentScoreId = scoreId;
+
+            // Update URL
+            const url = new URL(window.location);
+            url.searchParams.set('replay', scoreId);
+            window.history.pushState({}, '', url);
+
+            // Show modal
+            const modal = document.getElementById('replayModal');
+            const modalBody = document.getElementById('modalBody');
+            const modalTitle = document.getElementById('modalTitle');
+
+            // Build title with rank info
+            let title = 'Game Replay';
+            if (rank !== null && submissionType && timePeriod) {
+                const periodText = {
+                    'all_time': 'All-Time',
+                    'weekly': 'Weekly',
+                    'daily': 'Daily'
+                }[timePeriod] || '';
+
+                const typeText = submissionType === 'time' ? 'Fastest Time' : 'Highest Score';
+                title = `#${rank} ${periodText} ${typeText}`;
+            }
+
+            modalTitle.textContent = title;
+            modalBody.innerHTML = '<div class="board-loading">Loading board...</div>';
+
+            modal.classList.add('active');
+
+            // Fetch replay data
+            try {
+                const response = await fetch(`${API_URL}/replay/${scoreId}`);
+                if (!response.ok) throw new Error('Failed to load replay');
+
+                const data = await response.json();
+
+                // Create board container
+                const boardContainer = document.createElement('div');
+                boardContainer.className = 'board-container';
+
+                // Render the board
+                renderBoard(data.final_board, boardContainer);
+
+                // Update modal content
+                modalBody.innerHTML = '';
+                modalBody.appendChild(boardContainer);
+
+                // Add metadata
+                const metadata = document.createElement('div');
+                metadata.style.cssText = 'text-align: center; margin-top: 20px; color: #8CB84A;';
+                metadata.innerHTML = `
+                    <p><strong>Player:</strong> ${data.username}</p>
+                    <p><strong>Score:</strong> ${data.score.toLocaleString()}</p>
+                    ${data.submission_type === 'time' ? `<p><strong>Won:</strong> ${data.won ? 'Yes' : 'No'}</p>` : ''}
+                `;
+                modalBody.appendChild(metadata);
+
+                // Add share button
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'share-button';
+                shareBtn.textContent = '🔗 Share this board';
+                shareBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?replay=${scoreId}`;
+                    navigator.clipboard.writeText(shareUrl);
+                    shareBtn.textContent = '✓ Link copied!';
+                    setTimeout(() => {
+                        shareBtn.textContent = '🔗 Share this board';
+                    }, 2000);
+                };
+                modalBody.appendChild(shareBtn);
+
+            } catch (error) {
+                console.error('Error loading board:', error);
+                console.error('Error details:', error.message, error.stack);
+                modalBody.innerHTML = `<div class="error">Failed to load board: ${error.message}</div>`;
+            }
+        }
+
+        function closeModal() {
+            currentScoreId = null;
+
+            // Clear URL parameter
+            const url = new URL(window.location);
+            url.searchParams.delete('replay');
+            window.history.pushState({}, '', url);
+
+            // Hide modal
+            const modal = document.getElementById('replayModal');
+            modal.classList.remove('active');
+        }
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && currentScoreId) {
+                closeModal();
+            }
+        });
+
+        // Close modal when clicking overlay (but not content)
+        document.getElementById('replayModal').addEventListener('click', (e) => {
+            if (e.target.id === 'replayModal') {
+                closeModal();
+            }
+        });
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function getRankClass(index) {
+            if (index === 0) return 'rank-1';
+            if (index === 1) return 'rank-2';
+            if (index === 2) return 'rank-3';
+            return '';
+        }
+
+        // Canvas-based board rendering (reusing game's approach)
+        const circleSize = 80;
+        const slice = Math.PI / 6;
+        const angles = [0, 1, 2, 3, 4, 5].map(i => i * slice * 2);
+
+        function offset2(x, y, angleIdx, factor) {
+            const retX = x + Math.sin(angles[angleIdx]) * factor;
+            const retY = y + Math.cos(angles[angleIdx]) * factor;
+            return [retX, retY];
+        }
+
+        function getColorTuple(value) {
+            if (value > 729) value = value / 729;
+            const colorMap = {
+                0: [[92,92,92], [40,40,40]],
+                3: [[82,159,237], [57,126,213]],
+                9: [[140,184,74], [112,157,68]],
+                27: [[250,227,67], [242,192,57]],
+                81: [[239,157,46], [233,127,45]],
+                243: [[222,72,58], [186,53,47]],
+                729: [[159,75,182], [117,56,147]]
+            };
+            return colorMap[value] || colorMap[0];
+        }
+
+        function roundedPoly(ctx, points, radiusAll) {
+            const asVec = (p, pp, v) => {
+                v.x = pp.x - p.x;
+                v.y = pp.y - p.y;
+                v.len = Math.sqrt(v.x * v.x + v.y * v.y);
+                v.nx = v.x / v.len;
+                v.ny = v.y / v.len;
+                v.ang = Math.atan2(v.ny, v.nx);
+            };
+
+            let radius = radiusAll;
+            const v1 = {}, v2 = {};
+            const len = points.length;
+            let p1 = points[len - 1];
+
+            for (let i = 0; i < len; i++) {
+                let p2 = points[i % len];
+                let p3 = points[(i + 1) % len];
+
+                asVec(p2, p1, v1);
+                asVec(p2, p3, v2);
+
+                const sinA = v1.nx * v2.ny - v1.ny * v2.nx;
+                const sinA90 = v1.nx * v2.nx - v1.ny * -v2.ny;
+                let angle = Math.asin(sinA);
+
+                let radDirection = 1;
+                let drawDirection = false;
+
+                if (sinA90 < 0) {
+                    if (angle < 0) {
+                        angle = Math.PI + angle;
+                    } else {
+                        angle = Math.PI - angle;
+                        radDirection = -1;
+                        drawDirection = true;
+                    }
+                } else if (angle > 0) {
+                    radDirection = -1;
+                    drawDirection = true;
+                }
+
+                if (p2.radius !== undefined) {
+                    radius = p2.radius;
+                } else {
+                    radius = radiusAll;
+                }
+
+                const halfAngle = angle / 2;
+                let lenOut = Math.abs(Math.cos(halfAngle) * radius / Math.sin(halfAngle));
+
+                if (lenOut > Math.min(v1.len / 2, v2.len / 2)) {
+                    lenOut = Math.min(v1.len / 2, v2.len / 2);
+                }
+
+                const cRadius = Math.abs(lenOut * Math.sin(halfAngle));
+                const x = p2.x + v2.nx * lenOut;
+                const y = p2.y + v2.ny * lenOut;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                const x2 = p2.x + v1.nx * lenOut;
+                const y2 = p2.y + v1.ny * lenOut;
+
+                ctx.arcTo(p2.x, p2.y, x2, y2, cRadius);
+                p1 = p2;
+                p2 = p3;
+            }
+            ctx.closePath();
+        }
+
+        function drawHexagon(x, y, ctx, value) {
+            const ret = offset2(x, y, 0, circleSize / 2);
+            let cornerX = ret[0];
+            let cornerY = ret[1];
+
+            const points = [];
+            let yTop = cornerY;
+            let yBot = cornerY - circleSize / 2;
+
+            for (let h = 0; h < 6; h++) {
+                const ret2 = offset2(cornerX, cornerY, h, circleSize / 2);
+                cornerX = ret2[0];
+                cornerY = ret2[1];
+                points.push({x: ret2[0], y: ret2[1]});
+            }
+
+            const colors = getColorTuple(value);
+            const gradient = ctx.createLinearGradient(0, yTop, 0, yBot);
+            gradient.addColorStop(0, `rgba(${colors[1][0]},${colors[1][1]},${colors[1][2]},1)`);
+            gradient.addColorStop(1, `rgba(${colors[0][0]},${colors[0][1]},${colors[0][2]},1)`);
+
+            ctx.fillStyle = gradient;
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = value !== 0 ? 5 : 2;
+
+            ctx.beginPath();
+            roundedPoly(ctx, points, circleSize / 12);
+            ctx.fill();
+            ctx.stroke();
+
+            if (value !== 0) {
+                ctx.fillStyle = 'rgba(40,40,40,1)';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                ctx.font = `bold ${circleSize * 0.4}px Arial`;
+                ctx.fillText(value.toString(), x, y);
+            }
+        }
+
+        // Hexagonal grid positions - manually positioned to match game's 3-4-5-4-3 layout
+        // Row 1 (top): 12, 13, 14
+        // Row 2: 11, 3, 4, 15
+        // Row 3 (middle): 10, 2, 0, 5, 16
+        // Row 4: 9, 1, 6, 17
+        // Row 5 (bottom): 8, 7, 18
+        function calculateHexPositions(centerX, centerY) {
+            const positions = new Array(19); // Pre-allocate array with 19 slots
+            const dx = circleSize * 1.05; // Horizontal spacing between hexagons
+            const dy = circleSize * 0.91; // Vertical spacing (adjusted for hex shape)
+
+            // Row 3 (middle, 5 tiles): 10, 2, 0, 5, 16
+            positions[0] = {x: centerX, y: centerY};
+            positions[2] = {x: centerX - dx, y: centerY};
+            positions[5] = {x: centerX + dx, y: centerY};
+            positions[10] = {x: centerX - dx * 2, y: centerY};
+            positions[16] = {x: centerX + dx * 2, y: centerY};
+
+            // Row 2 (4 tiles): 11, 3, 4, 15
+            positions[3] = {x: centerX - dx * 0.5, y: centerY - dy};
+            positions[4] = {x: centerX + dx * 0.5, y: centerY - dy};
+            positions[11] = {x: centerX - dx * 1.5, y: centerY - dy};
+            positions[15] = {x: centerX + dx * 1.5, y: centerY - dy};
+
+            // Row 1 (top, 3 tiles): 12, 13, 14
+            positions[12] = {x: centerX - dx, y: centerY - dy * 2};
+            positions[13] = {x: centerX, y: centerY - dy * 2};
+            positions[14] = {x: centerX + dx, y: centerY - dy * 2};
+
+            // Row 4 (4 tiles): 9, 1, 6, 17
+            positions[1] = {x: centerX - dx * 0.5, y: centerY + dy};
+            positions[6] = {x: centerX + dx * 0.5, y: centerY + dy};
+            positions[9] = {x: centerX - dx * 1.5, y: centerY + dy};
+            positions[17] = {x: centerX + dx * 1.5, y: centerY + dy};
+
+            // Row 5 (bottom, 3 tiles): 8, 7, 18
+            positions[7] = {x: centerX, y: centerY + dy * 2};
+            positions[8] = {x: centerX - dx, y: centerY + dy * 2};
+            positions[18] = {x: centerX + dx, y: centerY + dy * 2};
+
+            console.log('Positions array:', positions); // Debug log
+            return positions;
+        }
+
+        function getSquareEmoji(value) {
+            if (value > 729) {
+                value = value / 729;
+            }
+            const emojiMap = {
+                0: "⬛",
+                3: "🟦",
+                9: "🟩",
+                27: "🟨",
+                81: "🟧",
+                243: "🟥",
+                729: "🟪"
+            };
+            return emojiMap[value] || "⬛";
+        }
+
+        function renderBoard(boardValues, containerEl) {
+            // Board layout: 3-4-5-4-3 pattern
+            // Row 1: 12, 13, 14
+            // Row 2: 11, 3, 4, 15
+            // Row 3: 10, 2, 0, 5, 16
+            // Row 4: 9, 1, 6, 17
+            // Row 5: 8, 7, 18
+
+            const rows = [
+                [12, 13, 14],
+                [11, 3, 4, 15],
+                [10, 2, 0, 5, 16],
+                [9, 1, 6, 17],
+                [8, 7, 18]
+            ];
+
+            let html = '<div style="font-size: 40px; line-height: 1.2; text-align: center; font-family: monospace;">';
+
+            rows.forEach(row => {
+                html += '<div>';
+                row.forEach(index => {
+                    const emoji = getSquareEmoji(boardValues[index]);
+                    html += emoji;
+                });
+                html += '</div>';
+            });
+
+            html += '</div>';
+
+            containerEl.innerHTML = html;
+        }
+
+        async function toggleBoardExpansion(scoreId, rowEl) {
+            const expansionId = `expansion-${scoreId}`;
+            let expansionRow = document.getElementById(expansionId);
+
+            if (expansionRow) {
+                // Toggle existing
+                const isExpanded = expansionRow.classList.contains('expanded');
+                if (isExpanded) {
+                    expansionRow.classList.remove('expanded');
+                    rowEl.classList.remove('expanded-main');
+                    expandedRows.delete(scoreId);
+                } else {
+                    expansionRow.classList.add('expanded');
+                    rowEl.classList.add('expanded-main');
+                    expandedRows.add(scoreId);
+                }
+                return;
+            }
+
+            // Create new expansion row
+            const newRow = rowEl.parentElement.insertRow(rowEl.rowIndex + 1);
+            newRow.id = expansionId;
+            newRow.className = 'board-expansion expanded';
+
+            const cell = newRow.insertCell(0);
+            cell.colSpan = 10;
+
+            const boardContainer = document.createElement('div');
+            boardContainer.className = 'board-container';
+            boardContainer.innerHTML = '<div class="board-loading">Loading board...</div>';
+            cell.appendChild(boardContainer);
+
+            expandedRows.add(scoreId);
+
+            // Fetch replay data
+            try {
+                const response = await fetch(`${API_URL}/replay/${scoreId}`);
+                if (!response.ok) throw new Error('Failed to load replay');
+
+                const data = await response.json();
+
+                renderBoard(data.final_board, boardContainer);
+
+                // Add share button
+                const shareBtn = document.createElement('button');
+                shareBtn.className = 'share-button';
+                shareBtn.textContent = '🔗 Share this board';
+                shareBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    const url = `${window.location.origin}${window.location.pathname}?replay=${scoreId}`;
+                    navigator.clipboard.writeText(url);
+                    shareBtn.textContent = '✓ Link copied!';
+                    setTimeout(() => {
+                        shareBtn.textContent = '🔗 Share this board';
+                    }, 2000);
+                };
+                cell.appendChild(shareBtn);
+
+            } catch (error) {
+                console.error('Error loading board:', error);
+                boardContainer.innerHTML = '<div class="error">Failed to load board</div>';
+            }
+        }
+
+        async function loadTimeLeaderboard() {
+            const container = document.getElementById('timeLeaderboard');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/leaderboard/time?time_period=${currentPeriod}&limit=100`
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to load leaderboard');
+                }
+
+                const data = await response.json();
+
+                if (data.entries.length === 0) {
+                    container.innerHTML = '<div class="empty">No entries yet. Be the first!</div>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'leaderboard-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Time</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.entries.map((entry, index) => `
+                            <tr data-score-id="${entry.id}" onclick="openModal(${entry.id}, ${index + 1}, 'time', '${currentPeriod}')">
+                                <td class="rank ${getRankClass(index)}">${index + 1}</td>
+                                <td>${entry.username}</td>
+                                <td><strong>${formatTime(entry.time_to_729_seconds)}</strong></td>
+                                <td>${entry.score}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+
+                container.innerHTML = '';
+                container.appendChild(table);
+            } catch (error) {
+                console.error('Error loading time leaderboard:', error);
+                container.innerHTML = '<div class="error">Failed to load leaderboard</div>';
+            }
+        }
+
+        async function loadHighScoreLeaderboard() {
+            const container = document.getElementById('highScoreLeaderboard');
+            container.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+                const response = await fetch(
+                    `${API_URL}/leaderboard/high_score?time_period=${currentPeriod}&limit=100`
+                );
+
+                if (!response.ok) {
+                    throw new Error('Failed to load leaderboard');
+                }
+
+                const data = await response.json();
+
+                if (data.entries.length === 0) {
+                    container.innerHTML = '<div class="empty">No entries yet. Be the first!</div>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'leaderboard-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Score</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${data.entries.map((entry, index) => `
+                            <tr data-score-id="${entry.id}" onclick="openModal(${entry.id}, ${index + 1}, 'high_score', '${currentPeriod}')">
+                                <td class="rank ${getRankClass(index)}">${index + 1}</td>
+                                <td>${entry.username}</td>
+                                <td><strong>${entry.score.toLocaleString()}</strong></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+
+                container.innerHTML = '';
+                container.appendChild(table);
+            } catch (error) {
+                console.error('Error loading high score leaderboard:', error);
+                container.innerHTML = '<div class="error">Failed to load leaderboard</div>';
+            }
+        }
+
+        function loadLeaderboards() {
+            loadTimeLeaderboard();
+            loadHighScoreLeaderboard();
+        }
+
+        // Check for replay URL parameter on load
+        const urlParams = new URLSearchParams(window.location.search);
+        const replayId = urlParams.get('replay');
+
+        // Initial load
+        loadLeaderboards();
+
+        // If replay parameter exists, open modal after load
+        if (replayId) {
+            setTimeout(() => {
+                openModal(parseInt(replayId), null, null, null);
+            }, 500);
+        }
+
+        // Refresh every 30 seconds
+        setInterval(loadLeaderboards, 30000);
+    </script>
+</body>
+</html>
