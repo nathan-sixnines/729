@@ -25,7 +25,7 @@
 </div>
 
 <!-- Version Number -->
-<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.5.0</div>
+<div style="position:absolute; bottom:2%; right:2%; z-index:100; color:#999; font-size:10px; opacity:0.5;">v1.5.1</div>
 
 <div id ="instructions">
 <p>Line up three matching numbers and swipe them together. Get a <b>729</b> tile to win.</p>
@@ -40,7 +40,7 @@
     </div>
 <button onclick="newGame()" class="button">New Game</button>
 <button onclick="toClipboard(true)" class="button3">Share (clipboard)</button>
-<button id="gameOverLoginBtn" onclick="saveGameState(); loginWithDiscord();" class="button" style="display:none;">Login to Claim Score</button>
+<button id="gameOverLoginBtn" onclick="saveGameState(); showLoginOptions('gameOver');" class="button" style="display:none;">Claim Your Score</button>
 </div>
 
 <div id ="youWin">
@@ -53,11 +53,36 @@
     </div>
 <button onclick="continueGame()" class="contButton">Continue?</button>
 <button onclick="toClipboard(false)" class="button3">Share (clipboard)</button>
-<button id="winLoginBtn" onclick="saveGameState(); loginWithDiscord();" class="button" style="display:none;">Login to Claim Time</button>
+<button id="winLoginBtn" onclick="saveGameState(); showLoginOptions('win');" class="button" style="display:none;">Claim Your Time</button>
 </div>
 
 <div id ="score" onclick="toggleScore()">
     <p">Score: </p>
+</div>
+
+<!-- Login Options Modal -->
+<div id="loginOptionsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center;">
+    <div style="background:#282828; padding:30px; border-radius:16px; max-width:400px; text-align:center; color:#fff;">
+        <h2 style="margin:0 0 20px 0; color:#8CB84A;">Claim Your Score</h2>
+        <p style="color:#999; margin-bottom:30px;">Choose how you'd like to claim your score:</p>
+
+        <button onclick="loginWithDiscord(); closeLoginOptions();" style="width:100%; background:#5865F2; color:#fff; border:none; padding:16px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; margin-bottom:12px;">
+            Login with Discord
+        </button>
+
+        <div style="margin:20px 0; color:#666;">— or —</div>
+
+        <div id="nameInputSection">
+            <input type="text" id="displayNameInput" placeholder="Enter your name (3-20 chars)" maxlength="20" style="width:100%; padding:12px; border:2px solid #444; border-radius:8px; background:#1a1a1a; color:#fff; font-size:16px; margin-bottom:12px; box-sizing:border-box;">
+            <button onclick="claimWithName();" style="width:100%; background:#8CB84A; color:#282828; border:none; padding:16px; border-radius:8px; cursor:pointer; font-size:16px; font-weight:bold; margin-bottom:12px;">
+                Just Use This Name
+            </button>
+        </div>
+
+        <button onclick="closeLoginOptions();" style="width:100%; background:#444; color:#fff; border:none; padding:12px; border-radius:8px; cursor:pointer; font-size:14px; margin-top:10px;">
+            Cancel
+        </button>
+    </div>
 </div>
 
 <meta name="viewport" content="user-scalable=no">
@@ -128,6 +153,8 @@ body {
 
     -webkit-overflow-scrolling: auto;
     height:100% -1px; overflow:hidden;
+    max-width: 66vh;
+    margin: 0 auto;
 }
 
 #tileCanvas { 
@@ -2695,12 +2722,35 @@ async function checkAuth() {
 
             return currentUser;
         } else {
-            currentUser = null;
-            updateAuthUI();
-            return null;
+            // Not logged in with Discord, check for local display name
+            var displayName = localStorage.getItem('displayName');
+            if (displayName) {
+                currentUser = {
+                    username: displayName,
+                    isLocalUser: true
+                };
+                updateAuthUI();
+                return currentUser;
+            } else {
+                currentUser = null;
+                updateAuthUI();
+                return null;
+            }
         }
     } catch (error) {
         console.error('Auth check failed:', error);
+
+        // Fallback: check for local display name
+        var displayName = localStorage.getItem('displayName');
+        if (displayName) {
+            currentUser = {
+                username: displayName,
+                isLocalUser: true
+            };
+            updateAuthUI();
+            return currentUser;
+        }
+
         currentUser = null;
         updateAuthUI();
         return null;
@@ -2783,9 +2833,89 @@ async function logoutUser() {
             credentials: 'include'
         });
         currentUser = null;
+        // Also clear local display name if set
+        localStorage.removeItem('displayName');
         updateAuthUI();
     } catch (error) {
         console.error('Logout failed:', error);
+    }
+}
+
+function showLoginOptions(context) {
+    var modal = document.getElementById('loginOptionsModal');
+    modal.style.display = 'flex';
+    modal.dataset.context = context;
+
+    // Pre-fill name input if they've used a display name before
+    var savedName = localStorage.getItem('displayName');
+    if (savedName) {
+        document.getElementById('displayNameInput').value = savedName;
+    }
+}
+
+function closeLoginOptions() {
+    var modal = document.getElementById('loginOptionsModal');
+    modal.style.display = 'none';
+}
+
+async function claimWithName() {
+    var nameInput = document.getElementById('displayNameInput');
+    var displayName = nameInput.value.trim();
+
+    if (!displayName) {
+        alert('Please enter a name');
+        return;
+    }
+
+    if (displayName.length < 3 || displayName.length > 20) {
+        alert('Name must be 3-20 characters');
+        return;
+    }
+
+    var sessionId = getSessionId();
+
+    try {
+        const response = await fetch(API_URL + '/claim-with-name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                display_name: displayName
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            // Show specific error message (e.g., profanity filter)
+            alert(data.detail || 'Failed to claim scores');
+            return;
+        }
+
+        // Success! Save the display name locally
+        localStorage.setItem('displayName', displayName);
+
+        // Create a pseudo-user object for the UI
+        currentUser = {
+            username: displayName,
+            isLocalUser: true  // Flag to indicate this is not a Discord user
+        };
+
+        updateAuthUI();
+        closeLoginOptions();
+
+        // Show success message
+        if (data.claimed_count > 0) {
+            alert(`✓ ${data.claimed_count} score(s) claimed as "${displayName}"!`);
+        } else {
+            alert(`✓ Future scores will appear as "${displayName}"!`);
+        }
+
+    } catch (error) {
+        console.error('Failed to claim with name:', error);
+        alert('Failed to claim scores. Please try again.');
     }
 }
 
