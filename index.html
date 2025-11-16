@@ -2955,8 +2955,8 @@ async function autoSubmitTime(timeSeconds) {
             moves: gameRecord.moves
         };
 
-        // Add session_id if not logged in
-        if (!currentUser) {
+        // Add session_id if not logged in with Discord (includes anonymous and local name users)
+        if (!currentUser || currentUser.isLocalUser) {
             submissionData.session_id = getSessionId();
         }
 
@@ -2982,8 +2982,8 @@ async function autoSubmitTime(timeSeconds) {
                 console.log('autoSubmitTime: no score_id in response', data);
             }
 
-            if (data.anonymous) {
-                // Anonymous submission - encourage login
+            if (data.anonymous && !currentUser) {
+                // Anonymous submission (no name set) - encourage login
                 timeDisplay.innerHTML = `
                     ✓ Time saved! (${mins}:${secs.toString().padStart(2, '0')})<br>
                     <span style="font-size:12px; color:#8CB84A;">Login to claim it on the leaderboard!</span>
@@ -3132,8 +3132,8 @@ async function autoSubmitHighScore(finalScore) {
             moves: gameRecord.moves
         };
 
-        // Add session_id if not logged in
-        if (!currentUser) {
+        // Add session_id if not logged in with Discord (includes anonymous and local name users)
+        if (!currentUser || currentUser.isLocalUser) {
             submissionData.session_id = getSessionId();
         }
 
@@ -3160,8 +3160,8 @@ async function autoSubmitHighScore(finalScore) {
                 console.log('autoSubmitHighScore: no score_id in response', data);
             }
 
-            if (data.anonymous) {
-                // Anonymous submission - encourage login
+            if (data.anonymous && !currentUser) {
+                // Anonymous submission (no name set) - encourage login
                 statusDiv.innerHTML = `
                     ✓ Score saved!<br>
                     <span style="font-size:12px; color:#8CB84A;">Login to claim it on the leaderboard!</span>
